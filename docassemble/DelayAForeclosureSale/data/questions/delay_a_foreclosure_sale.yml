@@ -21,10 +21,8 @@ objects:
   - other_parties[i].lawyer: ALIndividual
   - other_parties[i].hand_delivery_address: ALAddress
   - foreclosed_property: ALAddress
-  - users[i].mailbox: ALAddress
-  - users[i].carrier: ALAddress
-  - other_parties[i].mailbox: ALAddress
-  - other_parties[i].carrier: ALAddress
+  - users[i].mail: ALAddress
+  - other_parties[i].mail: ALAddress
   - delivery_parties: ALPeopleList.using(there_are_any=True)
   - delivery_parties[i].lawyer: ALIndividual
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
@@ -212,15 +210,21 @@ subquestion: |
   * The date of the sale (this can be found on the *Notice of foreclosure sale* form), 
   * Names and addresses of the other parties,
   * Names and addresses of the other parties' lawyers, and
-  * A good reason for asking to delay the foreclosure sale.
+  * A **{good reason}** for asking to delay the foreclosure sale.
 
-  You can find this information on the court papers you have about this case. 
+  You can find most of this information on the court papers you have about this case. 
 
   Set aside 10 to 20 minutes to finish this program. You can log in and save your work to return to later. 
  
   ${ collapse_template(help_example) }  
 
   Click on **{green words}** to learn what they mean. Some pages have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that helps explain things.
+terms:
+  - good reason: |
+      A good reason for asking to delay the foreclosure sale could be you have:
+      
+      * A loan modification application pending, or
+      * A short sale contract for the property being sold as a result of foreclosure.
 ---
 template: help_example
 subject: |
@@ -256,7 +260,7 @@ subject: |
 content: |
   It is easier to undo a judgment of foreclosure than a foreclosure sale. Once the foreclosed property is sold, the new owner may be able to evict you.
 
-  If your foreclosed property has not been sold, you have more choices. You may be able to ask for a loan modification, declare bankruptcy, secure financing, do a short sale, or find another way to stay in your home. To learn more, read ILAO's article about [**Options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure).
+  If your foreclosed property has not been sold, you have more choices. You may be able to ask for a loan modification, declare bankruptcy, secure financing, do a short sale, or find another way to stay in your home. To learn more, read ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure).
 ---
 id: judgment entered check
 question: |
@@ -444,7 +448,7 @@ question: |
 subquestion: |
     If the other defendants agree with your reasons to delay the sale, they can join your *Motion to Stay Foreclosure Sale*. This program can add their information to your forms.
 
-    Any defendants who join you will need to sign the forms before you file them.
+    **Note:** Any defendants who join you will need to sign the forms before you file them.
 ---
 id: user agree
 question: |
@@ -465,8 +469,10 @@ subquestion: |
 id: need to send
 continue button field: users[i].need_to_send
 question: |
-  You will need to provide a copy of your forms to ${users[i].name.full(middle='full')}.
+  Giving a copy to ${users[i].name.full(middle='full')}
 subquestion: |
+  You will need to provide a copy of your forms to ${users[i].name.full(middle='full')}.
+  
   More instructions on how to do this will be provided later.
 ---
 id: users delivery party address
@@ -560,11 +566,11 @@ content: |
 id: county
 continue button field: county
 question: |
-  Where was this case filed?
+  In which county was this case filed?
 subquestion: |
   ${ collapse_template(county_lookup_help) }  
 fields:
-  - County: trial_court_index
+  - no label: trial_court_index
     code: |
       court_county_lookup()
 ---
@@ -603,7 +609,9 @@ fields:
 ---
 id: been in court
 question: |
-  Have you already been to the judge about this case?
+  Have you been to court and seen a judge about this case?
+subquestion: |
+  Select **Yes** if you went to court and saw a judge about this foreclosure case.
 fields:
   - no label: been_in_court
     datatype: yesnoradio
@@ -618,7 +626,7 @@ fields:
 id: include orders
 continue button field: include_orders
 question: |
-  About orders
+  Attach prior foreclosure stay orders
 subquestion: |
   Attach copies of the foreclosure stay orders from your previous foreclosure sale delay when you file your forms.
 
@@ -662,9 +670,9 @@ fields:
 id: include modification contract
 continue button field: include_mod_contract
 question: |
-  About the modification contract
+  Attach the loan modification contract
 subquestion: |
-  Include a copy of the modification contract when you file your forms.
+  Include a copy of the loan modification contract when you file your forms.
 ---
 id: short sale contract
 question: |
@@ -680,7 +688,7 @@ fields:
 id: include short sale contract
 continue button field: include_short_contract
 question: |
-  About the sale contract
+  Attach the sale contract
 subquestion: | 
   Include a copy of the sale contract when you file your forms.
 ---
@@ -696,7 +704,7 @@ question: |
   Other reasons to delay foreclosure sale
 fields:
   - Do you have other reasons why you want to delay the foreclosure sale?: other_reasons
-    datatype: yesnoradio
+    datatype: yesnowide
   - What other reasons?: other_reasons_text
     maxlength: 160
     input type: area
@@ -843,65 +851,30 @@ fields:
     required: False
   - US mail: x.mail_delivery
     datatype: yesnowide
-  - Address of post office or mailbox: x.mailbox.address
+  - How will you mail your forms?: x.mail_type
+    show if:
+      variable: x.mail_delivery
+      is: True
+    input type: radio
+    choices:
+      - Through the United States Postal Service: usps
+      - Through a third-party carrier, such as FedEx or UPS: third
+    required: False                                                      
+  - Address or intersection of post office or mailbox: x.mail.address
     address autocomplete: True
-    show if: 
-      variable: x.mail_delivery
-      is: True
+    js show if: val("x.mail_delivery") === true && val("x.mail_type") === "usps"
     required: False
-  - Address line 2: x.mailbox.unit
-    show if: 
-      variable: x.mail_delivery
-      is: True
-    required: False
-  - City: x.mailbox.city
-    show if: 
-      variable: x.mail_delivery
-      is: True
-    required: False
-  - State: x.mailbox.state
-    code: |
-      states_list()
-    default: IL      
-    show if: 
-      variable: x.mail_delivery
-      is: True
-    required: False
-  - ZIP code: x.mailbox.zip
-    show if: 
-      variable: x.mail_delivery
-      is: True
-    required: False
-  - Delivery company (like UPS or FedEx): x.by_third_party
-    datatype: yesnowide
-  - Address of delivery company: x.carrier.address
+  - Address or intersection of third-party carrier: x.mail.address
     address autocomplete: True
-    show if: 
-      variable: x.by_third_party
-      is: True
+    js show if: val("x.mail_delivery") === true && val("x.mail_type") === "third"
     required: False
-  - Address line 2: x.carrier.unit
-    show if: 
-      variable: x.by_third_party
-      is: True
+  - City: x.mail.city
+    js show if: val("x.mail_delivery") === true && (val("x.mail_type") === "usps" || val("x.mail_type") === "third")
     required: False
-  - City: x.carrier.city
-    show if: 
-      variable: x.by_third_party
-      is: True
-    required: False
-  - State: x.carrier.state
+  - State: x.mail.state
     code: |
-      states_list()
-    default: IL      
-    show if: 
-      variable: x.by_third_party
-      is: True
-    required: False
-  - ZIP code: x.carrier.zip
-    show if: 
-      variable: x.by_third_party
-      is: True
+      states_list()    
+    js show if: val("x.mail_delivery") === true && (val("x.mail_type") === "usps" || val("x.mail_type") === "third")
     required: False
   - Hand delivery: x.hand_delivery
     datatype: yesnowide
@@ -1243,14 +1216,30 @@ attachment:
         % endif
     - "delivery_party_address_1": ${delivery_parties[0].address.on_one_line(bare=True)}
     - "delivery_email_1": ${delivery_parties[0].delivery_email}
-    - "post_office_1": ${delivery_parties[0].mailbox.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else ""}
-    - "carrier_info_1": ${delivery_parties[0].carrier.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].by_third_party else ""}
+    - "post_office_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
+        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % endif
+    - "carrier_info_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
+        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % endif
     - "prison_name_1": ${delivery_parties[0].delivery_jail_name if delivery_parties[0].jail_delivery and delivery_parties[0].knows_delivery_method else ""}
     - "delivery_date_1": ${delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method else ""}
     - "delivery_time_1": ${format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method and delivery_parties[0].delivery_time != "" else ""}
     - "hand_delivery_1": ${delivery_parties[0].hand_delivery if delivery_parties[0].knows_delivery_method else False}
-    - "mail_delivery_1": ${delivery_parties[0].mail_delivery if delivery_parties[0].knows_delivery_method else False}
-    - "carrier_delivery_1": ${delivery_parties[0].by_third_party if delivery_parties[0].knows_delivery_method else False}
+    - "mail_delivery_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
+        ${True}
+        % else:
+        ${False}
+        % endif
+    - "carrier_delivery_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
+        ${True}
+        % else:
+        ${False}
+        % endif
     - "efm_1": ${delivery_parties[0].efm_delivery if delivery_parties[0].knows_delivery_method else False}
     - "email_delivery_1": ${delivery_parties[0].email_delivery if delivery_parties[0].knows_delivery_method else False}
     - "prison_delivery_1": ${delivery_parties[0].jail_delivery if delivery_parties[0].knows_delivery_method else False}
@@ -1264,14 +1253,30 @@ attachment:
         % endif
     - "delivery_party_address_2": ${delivery_parties[1].address.on_one_line(bare=True)}
     - "delivery_email_2": ${delivery_parties[1].delivery_email}
-    - "post_office_2": ${delivery_parties[1].mailbox.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else ""}
-    - "carrier_info_2": ${delivery_parties[1].carrier.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].by_third_party else ""}
+    - "post_office_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
+        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % endif
+    - "carrier_info_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
+        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % endif
     - "prison_name_2": ${delivery_parties[1].delivery_jail_name if delivery_parties[1].jail_delivery and delivery_parties[1].knows_delivery_method else ""}
     - "delivery_date_2": ${delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method else ""}
     - "delivery_time_2": ${format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method and delivery_parties[1].delivery_time != "" else ""}
     - "hand_delivery_2": ${delivery_parties[1].hand_delivery if delivery_parties[1].knows_delivery_method else False}
-    - "mail_delivery_2": ${delivery_parties[1].mail_delivery if delivery_parties[1].knows_delivery_method else False}
-    - "carrier_delivery_2": ${delivery_parties[1].by_third_party if delivery_parties[1].knows_delivery_method else False}
+    - "mail_delivery_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
+        ${True}
+        % else:
+        ${False}
+        % endif
+    - "carrier_delivery_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
+        ${True}
+        % else:
+        ${False}
+        % endif
     - "efm_2": ${delivery_parties[1].efm_delivery if delivery_parties[1].knows_delivery_method else False}
     - "email_delivery_2": ${delivery_parties[1].email_delivery if delivery_parties[1].knows_delivery_method else False}
     - "prison_delivery_2": ${delivery_parties[1].jail_delivery if delivery_parties[1].knows_delivery_method else False}
@@ -1285,14 +1290,30 @@ attachment:
         % endif
     - "delivery_party_address_3": ${delivery_parties[2].address.on_one_line(bare=True)}
     - "delivery_email_3": ${delivery_parties[2].delivery_email}
-    - "post_office_3": ${delivery_parties[2].mailbox.on_one_line(bare=True) if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery else ""}
-    - "carrier_info_3": ${delivery_parties[2].carrier.on_one_line(bare=True) if delivery_parties[2].knows_delivery_method and delivery_parties[2].by_third_party else ""}
+    - "post_office_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
+        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % endif
+    - "carrier_info_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
+        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % endif
     - "prison_name_3": ${delivery_parties[2].delivery_jail_name if delivery_parties[2].jail_delivery and delivery_parties[2].knows_delivery_method else ""}
     - "delivery_date_3": ${delivery_parties[2].delivery_date if delivery_parties[2].knows_delivery_method else ""}
     - "delivery_time_3": ${format_time(delivery_parties[2].delivery_time, format='h:mm') if delivery_parties[2].knows_delivery_method and delivery_parties[2].delivery_time != "" else ""}
     - "hand_delivery_3": ${delivery_parties[2].hand_delivery if delivery_parties[2].knows_delivery_method else False}
-    - "mail_delivery_3": ${delivery_parties[2].mail_delivery if delivery_parties[2].knows_delivery_method else False}
-    - "carrier_delivery_3": ${delivery_parties[2].by_third_party if delivery_parties[2].knows_delivery_method else False}
+    - "mail_delivery_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
+        ${True}
+        % else:
+        ${False}
+        % endif
+    - "carrier_delivery_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
+        ${True}
+        % else:
+        ${False}
+        % endif
     - "efm_3": ${delivery_parties[2].efm_delivery if delivery_parties[2].knows_delivery_method else False}
     - "email_delivery_3": ${delivery_parties[2].email_delivery if delivery_parties[2].knows_delivery_method else False}
     - "prison_delivery_3": ${delivery_parties[2].jail_delivery if delivery_parties[2].knows_delivery_method else False}
@@ -1332,14 +1353,30 @@ attachment:
         % endif
     - "delivery_party_address_1": ${delivery_parties[0].address.on_one_line(bare=True)}
     - "delivery_email_1": ${delivery_parties[0].delivery_email}
-    - "post_office_1": ${delivery_parties[0].mailbox.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else ""}
-    - "carrier_info_1": ${delivery_parties[0].carrier.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].by_third_party else ""}
+    - "post_office_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
+        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % endif
+    - "carrier_info_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
+        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % endif
     - "prison_name_1": ${delivery_parties[0].delivery_jail_name if delivery_parties[0].jail_delivery and delivery_parties[0].knows_delivery_method else ""}
     - "delivery_date_1": ${delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method else ""}
     - "delivery_time_1": ${format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method and delivery_parties[0].delivery_time != "" else ""}
     - "hand_delivery_1": ${delivery_parties[0].hand_delivery if delivery_parties[0].knows_delivery_method else False}
-    - "mail_delivery_1": ${delivery_parties[0].mail_delivery if delivery_parties[0].knows_delivery_method else False}
-    - "carrier_delivery_1": ${delivery_parties[0].by_third_party if delivery_parties[0].knows_delivery_method else False}
+    - "mail_delivery_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
+        ${True}
+        % else:
+        ${False}
+        % endif
+    - "carrier_delivery_1": |
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
+        ${True}
+        % else:
+        ${False}
+        % endif
     - "efm_1": ${delivery_parties[0].efm_delivery if delivery_parties[0].knows_delivery_method else False}
     - "email_delivery_1": ${delivery_parties[0].email_delivery if delivery_parties[0].knows_delivery_method else False}
     - "prison_delivery_1": ${delivery_parties[0].jail_delivery if delivery_parties[0].knows_delivery_method else False}
@@ -1353,14 +1390,30 @@ attachment:
         % endif
     - "delivery_party_address_2": ${delivery_parties[1].address.on_one_line(bare=True)}
     - "delivery_email_2": ${delivery_parties[1].delivery_email}
-    - "post_office_2": ${delivery_parties[1].mailbox.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else ""}
-    - "carrier_info_2": ${delivery_parties[1].carrier.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].by_third_party else ""}
+    - "post_office_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
+        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % endif
+    - "carrier_info_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
+        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % endif
     - "prison_name_2": ${delivery_parties[1].delivery_jail_name if delivery_parties[1].jail_delivery and delivery_parties[1].knows_delivery_method else ""}
     - "delivery_date_2": ${delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method else ""}
     - "delivery_time_2": ${format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method and delivery_parties[1].delivery_time != "" else ""}
     - "hand_delivery_2": ${delivery_parties[1].hand_delivery if delivery_parties[1].knows_delivery_method else False}
-    - "mail_delivery_2": ${delivery_parties[1].mail_delivery if delivery_parties[1].knows_delivery_method else False}
-    - "carrier_delivery_2": ${delivery_parties[1].by_third_party if delivery_parties[1].knows_delivery_method else False}
+    - "mail_delivery_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
+        ${True}
+        % else:
+        ${False}
+        % endif
+    - "carrier_delivery_2": |
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
+        ${True}
+        % else:
+        ${False}
+        % endif
     - "efm_2": ${delivery_parties[1].efm_delivery if delivery_parties[1].knows_delivery_method else False}
     - "email_delivery_2": ${delivery_parties[1].email_delivery if delivery_parties[1].knows_delivery_method else False}
     - "prison_delivery_2": ${delivery_parties[1].jail_delivery if delivery_parties[1].knows_delivery_method else False}
@@ -1374,14 +1427,30 @@ attachment:
         % endif
     - "delivery_party_address_3": ${delivery_parties[2].address.on_one_line(bare=True)}
     - "delivery_email_3": ${delivery_parties[2].delivery_email}
-    - "post_office_3": ${delivery_parties[2].mailbox.on_one_line(bare=True) if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery else ""}
-    - "carrier_info_3": ${delivery_parties[2].carrier.on_one_line(bare=True) if delivery_parties[2].knows_delivery_method and delivery_parties[2].by_third_party else ""}
+    - "post_office_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
+        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % endif
+    - "carrier_info_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
+        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % endif
     - "prison_name_3": ${delivery_parties[2].delivery_jail_name if delivery_parties[2].jail_delivery and delivery_parties[2].knows_delivery_method else ""}
     - "delivery_date_3": ${delivery_parties[2].delivery_date if delivery_parties[2].knows_delivery_method else ""}
     - "delivery_time_3": ${format_time(delivery_parties[2].delivery_time, format='h:mm') if delivery_parties[2].knows_delivery_method and delivery_parties[2].delivery_time != "" else ""}
     - "hand_delivery_3": ${delivery_parties[2].hand_delivery if delivery_parties[2].knows_delivery_method else False}
-    - "mail_delivery_3": ${delivery_parties[2].mail_delivery if delivery_parties[2].knows_delivery_method else False}
-    - "carrier_delivery_3": ${delivery_parties[2].by_third_party if delivery_parties[2].knows_delivery_method else False}
+    - "mail_delivery_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
+        ${True}
+        % else:
+        ${False}
+        % endif
+    - "carrier_delivery_3": |
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
+        ${True}
+        % else:
+        ${False}
+        % endif
     - "efm_3": ${delivery_parties[2].efm_delivery if delivery_parties[2].knows_delivery_method else False}
     - "email_delivery_3": ${delivery_parties[2].email_delivery if delivery_parties[2].knows_delivery_method else False}
     - "prison_delivery_3": ${delivery_parties[2].jail_delivery if delivery_parties[2].knows_delivery_method else False}
@@ -1429,23 +1498,9 @@ attachment:
     - "by_email_4": ${x.email_delivery}
     - "efsp_4": ${x.efm_delivery}
     - "physical_method_4": ${True if x.mail_delivery or x.by_third_party or x.hand_delivery or x.jail_delivery else False}
-    - "regular_or_third_mail_4": ${True if x.mail_delivery or x.by_third_party else False}
-    - "mailbox_third_party_address_4": |
-        % if x.mail_delivery and x.by_third_party:
-        Mail: ${x.mailbox.on_one_line(bare=True)}
-        % elif x.mail_delivery:
-        ${x.mailbox.on_one_line(bare=True)}
-        % elif x.by_third_party:
-        ${x.carrier.on_one_line(bare=True)}
-        % else:
-        ${""}
-        % endif
-    - "carrier_location_4": |
-        % if x.mail_delivery and x.by_third_party:
-        Carrier: ${x.carrier.on_one_line(bare=True)}
-        % else:
-        ${""}
-        % endif
+    - "regular_or_third_mail_4": ${True if x.mail_delivery else False}
+    - "mailbox_third_party_address_4": ${x.mail.on_one_line(bare=True) if x.mail_delivery else ""}
+    - "carrier_location_4": ${""}
     - "hand_delivery_4": ${x.hand_delivery}
     - "hand_address_4": ${x.hand_delivery_address.on_one_line(bare=True)}
     - "prison_mail_4": ${x.jail_delivery}
@@ -1471,23 +1526,9 @@ attachment:
     - "by_email_5": ${x.second_person.email_delivery}
     - "efsp_5": ${x.second_person.efm_delivery}
     - "physical_method_5": ${True if x.second_person.mail_delivery or x.second_person.by_third_party or x.second_person.hand_delivery or x.second_person.jail_delivery else False}
-    - "regular_or_third_mail_5": ${True if x.second_person.mail_delivery or x.second_person.by_third_party else False}
-    - "mailbox_third_party_address_5": |
-        % if x.second_person.mail_delivery and x.second_person.by_third_party:
-        Mail: ${x.second_person.mailbox.on_one_line(bare=True)}
-        % elif x.second_person.mail_delivery:
-        ${x.second_person.mailbox.on_one_line(bare=True)}
-        % elif x.second_person.by_third_party:
-        ${x.second_person.carrier.on_one_line(bare=True)}
-        % else:
-        ${""}
-        % endif
-    - "carrier_location_5": |
-        % if x.second_person.mail_delivery and x.second_person.by_third_party:
-        Carrier: ${x.second_person.carrier.on_one_line(bare=True)}
-        % else:
-        ${""}
-        % endif
+    - "regular_or_third_mail_5": ${True if x.second_person.mail_delivery else False}
+    - "mailbox_third_party_address_5": ${x.second_person.mail.on_one_line(bare=True) if x.second_person.mail_delivery else ""}
+    - "carrier_location_5": ${""}
     - "hand_delivery_5": ${x.second_person.hand_delivery}
     - "hand_address_5": ${x.second_person.hand_delivery_address.on_one_line(bare=True)}
     - "prison_mail_5": ${x.second_person.jail_delivery}
@@ -1739,10 +1780,7 @@ review:
         * Hand
       % endif
       % if x.mail_delivery == True:
-        * US mail
-      % endif
-      % if x.by_third_party:
-        * Delivery company
+        * Mail
       % endif
       % if x.jail_delivery == True:
         * Mail from prison or jail
@@ -1753,16 +1791,15 @@ review:
       **Email address for delivery**:
       ${x.delivery_email}
     show if: x.knows_delivery_method and (x.efm_delivery or x.email_delivery) and not x.agree
-  - Edit: x.mailbox.address
+  - Edit: x.mail.address
     button: |
+      % if x.mail_type == "usps":
       **Address of mailbox or post office:**
-      ${x.mailbox.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.mail_delivery and not x.agree
-  - Edit: x.carrier.address
-    button: |
-      **City and state of delivery company**:
-      ${x.carrier.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.by_third_party and not x.agree
+      % elif x.mail_type == "third":
+      **Address of third-party carrier:**
+      % endif
+      ${x.mail.on_one_line(bare=True)}
+    show if: x.knows_delivery_method and x.mail_delivery and not x.agree and (x.mail_type == "usps" or x.mail_type == "third")
   - Edit: x.hand_delivery_address.address
     button: |
       **Address for hand delivery:**
@@ -1835,10 +1872,7 @@ review:
         * Hand
       % endif
       % if x.mail_delivery == True:
-        * US mail
-      % endif
-      % if x.by_third_party:
-        * Delivery company
+        * Mail
       % endif
       % if x.jail_delivery == True:
         * Mail from prison or jail
@@ -1849,16 +1883,15 @@ review:
       **Email address for delivery**:
       ${x.delivery_email}
     show if: x.knows_delivery_method and (x.efm_delivery or x.email_delivery)
-  - Edit: x.mailbox.address
+  - Edit: x.mail.address
     button: |
+      % if x.mail_type == "usps":
       **Address of mailbox or post office:**
-      ${x.mailbox.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.mail_delivery and not x.agree
-  - Edit: x.carrier.address
-    button: |
-      **City and state of delivery company**:
-      ${x.carrier.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.by_third_party and not x.agree
+      % elif x.mail_type == "third":
+      **Address of third-party carrier:**
+      % endif
+      ${x.mail.on_one_line(bare=True)}
+    show if: x.knows_delivery_method and x.mail_delivery and not x.agree and (x.mail_type == "usps" or x.mail_type == "third")
   - Edit: x.hand_delivery_address.address
     button: |
       **Address for hand delivery:**
