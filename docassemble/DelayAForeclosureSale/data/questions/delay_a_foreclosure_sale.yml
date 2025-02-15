@@ -23,6 +23,8 @@ objects:
   - foreclosed_property: ALAddress
   - users[i].mail: ALAddress
   - other_parties[i].mail: ALAddress
+  - users[i].carrier: ALAddress
+  - other_parties[i].carrier: ALAddress                      
   - delivery_parties: ALPeopleList.using(there_are_any=True)
   - delivery_parties[i].lawyer: ALIndividual
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
@@ -850,31 +852,44 @@ fields:
       val("x.efm_delivery") == true || val("x.email_delivery") == true
     required: False
   - US mail: x.mail_delivery
-    datatype: yesnowide
-  - How will you mail your forms?: x.mail_type
-    show if:
+    datatype: yesnowide                                                   
+  - Address or intersection of post office or mailbox: x.mail.address
+    address autocomplete: False
+    show if: 
       variable: x.mail_delivery
       is: True
-    input type: radio
-    choices:
-      - Through the United States Postal Service: usps
-      - Through a third-party carrier, such as FedEx or UPS: third
-    required: False                                                      
-  - Address or intersection of post office or mailbox: x.mail.address
-    address autocomplete: True
-    js show if: val("x.mail_delivery") === true && val("x.mail_type") === "usps"
-    required: False
-  - Address or intersection of third-party carrier: x.mail.address
-    address autocomplete: True
-    js show if: val("x.mail_delivery") === true && val("x.mail_type") === "third"
     required: False
   - City: x.mail.city
-    js show if: val("x.mail_delivery") === true && (val("x.mail_type") === "usps" || val("x.mail_type") === "third")
+    show if: 
+      variable: x.mail_delivery
+      is: True
     required: False
   - State: x.mail.state
     code: |
       states_list()    
-    js show if: val("x.mail_delivery") === true && (val("x.mail_type") === "usps" || val("x.mail_type") === "third")
+    show if: 
+      variable: x.mail_delivery
+      is: True
+    required: False
+  - Delivery company (like UPS or FedEx): x.by_third_party
+    datatype: yesnowide
+  - Address or intersection of delivery company: x.carrier.address
+    address autocomplete: False
+    show if: 
+      variable: x.by_third_party
+      is: True
+    required: False
+  - City of third-party carrier: x.carrier.city
+    show if: 
+      variable: x.by_third_party
+      is: True
+    required: False
+  - State of third-party carrier: x.carrier.state
+    code: |
+      states_list()    
+    show if: 
+      variable: x.by_third_party
+      is: True
     required: False
   - Hand delivery: x.hand_delivery
     datatype: yesnowide
@@ -1217,25 +1232,57 @@ attachment:
     - "delivery_party_address_1": ${delivery_parties[0].address.on_one_line(bare=True)}
     - "delivery_email_1": ${delivery_parties[0].delivery_email}
     - "post_office_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
-        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery:
+        % if delivery_parties[0].mail.address != "" and delivery_parties[0].mail.city != "" and delivery_parties[0].mail.state != "":
+        ${delivery_parties[0].mail.address }, ${delivery_parties[0].mail.city}, ${ state_name(delivery_parties[0].mail.state) }
+        % elif delivery_parties[0].mail.address != "" and delivery_parties[0].mail.city != "":
+        ${delivery_parties[0].mail.address }, ${delivery_parties[0].mail.city}
+        % elif delivery_parties[0].mail.address != "" and delivery_parties[0].mail.state != "":
+        ${delivery_parties[0].mail.address }, ${ state_name(delivery_parties[0].mail.state) }
+        % elif delivery_parties[0].mail.city != "" and delivery_parties[0].mail.state != "":
+        ${delivery_parties[0].mail.city}, ${ state_name(delivery_parties[0].mail.state) }
+        % elif delivery_parties[0].mail.address != "":
+        ${delivery_parties[0].mail.address}
+        % elif delivery_parties[0].mail.city != "":
+        ${delivery_parties[0].mail.state}
+        % else:
+        ${state_name(delivery_parties[0].mail.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "carrier_info_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
-        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].by_third_party:
+        % if delivery_parties[0].carrier.address != "" and delivery_parties[0].carrier.city != "" and delivery_parties[0].carrier.state != "":
+        ${delivery_parties[0].carrier.address }, ${delivery_parties[0].carrier.city}, ${ state_name(delivery_parties[0].carrier.state) }
+        % elif delivery_parties[0].carrier.address != "" and delivery_parties[0].carrier.city != "":
+        ${delivery_parties[0].carrier.address }, ${delivery_parties[0].carrier.city}
+        % elif delivery_parties[0].carrier.address != "" and delivery_parties[0].carrier.state != "":
+        ${delivery_parties[0].carrier.address }, ${ state_name(delivery_parties[0].carrier.state) }
+        % elif delivery_parties[0].carrier.city != "" and delivery_parties[0].carrier.state != "":
+        ${delivery_parties[0].carrier.city}, ${ state_name(delivery_parties[0].carrier.state) }
+        % elif delivery_parties[0].carrier.address != "":
+        ${delivery_parties[0].carrier.address}
+        % elif delivery_parties[0].carrier.city != "":
+        ${delivery_parties[0].carrier.state}
+        % else:
+        ${state_name(delivery_parties[0].carrier.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "prison_name_1": ${delivery_parties[0].delivery_jail_name if delivery_parties[0].jail_delivery and delivery_parties[0].knows_delivery_method else ""}
     - "delivery_date_1": ${delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method else ""}
     - "delivery_time_1": ${format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method and delivery_parties[0].delivery_time != "" else ""}
     - "hand_delivery_1": ${delivery_parties[0].hand_delivery if delivery_parties[0].knows_delivery_method else False}
     - "mail_delivery_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery:
         ${True}
         % else:
         ${False}
         % endif
     - "carrier_delivery_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].by_third_party:
         ${True}
         % else:
         ${False}
@@ -1254,25 +1301,57 @@ attachment:
     - "delivery_party_address_2": ${delivery_parties[1].address.on_one_line(bare=True)}
     - "delivery_email_2": ${delivery_parties[1].delivery_email}
     - "post_office_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
-        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery:
+        % if delivery_parties[1].mail.address != "" and delivery_parties[1].mail.city != "" and delivery_parties[1].mail.state != "":
+        ${delivery_parties[1].mail.address }, ${delivery_parties[1].mail.city}, ${ state_name(delivery_parties[1].mail.state) }
+        % elif delivery_parties[1].mail.address != "" and delivery_parties[1].mail.city != "":
+        ${delivery_parties[1].mail.address }, ${delivery_parties[1].mail.city}
+        % elif delivery_parties[1].mail.address != "" and delivery_parties[1].mail.state != "":
+        ${delivery_parties[1].mail.address }, ${ state_name(delivery_parties[1].mail.state) }
+        % elif delivery_parties[1].mail.city != "" and delivery_parties[1].mail.state != "":
+        ${delivery_parties[1].mail.city}, ${ state_name(delivery_parties[1].mail.state) }
+        % elif delivery_parties[1].mail.address != "":
+        ${delivery_parties[1].mail.address}
+        % elif delivery_parties[1].mail.city != "":
+        ${delivery_parties[1].mail.state}
+        % else:
+        ${state_name(delivery_parties[1].mail.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "carrier_info_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
-        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].by_third_party:
+        % if delivery_parties[1].carrier.address != "" and delivery_parties[1].carrier.city != "" and delivery_parties[1].carrier.state != "":
+        ${delivery_parties[1].carrier.address }, ${delivery_parties[1].carrier.city}, ${ state_name(delivery_parties[1].carrier.state) }
+        % elif delivery_parties[1].carrier.address != "" and delivery_parties[1].carrier.city != "":
+        ${delivery_parties[1].carrier.address }, ${delivery_parties[1].carrier.city}
+        % elif delivery_parties[1].carrier.address != "" and delivery_parties[1].carrier.state != "":
+        ${delivery_parties[1].carrier.address }, ${ state_name(delivery_parties[1].carrier.state) }
+        % elif delivery_parties[1].carrier.city != "" and delivery_parties[1].carrier.state != "":
+        ${delivery_parties[1].carrier.city}, ${ state_name(delivery_parties[1].carrier.state) }
+        % elif delivery_parties[1].carrier.address != "":
+        ${delivery_parties[1].carrier.address}
+        % elif delivery_parties[1].carrier.city != "":
+        ${delivery_parties[1].carrier.state}
+        % else:
+        ${state_name(delivery_parties[1].carrier.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "prison_name_2": ${delivery_parties[1].delivery_jail_name if delivery_parties[1].jail_delivery and delivery_parties[1].knows_delivery_method else ""}
     - "delivery_date_2": ${delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method else ""}
     - "delivery_time_2": ${format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method and delivery_parties[1].delivery_time != "" else ""}
     - "hand_delivery_2": ${delivery_parties[1].hand_delivery if delivery_parties[1].knows_delivery_method else False}
     - "mail_delivery_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery:
         ${True}
         % else:
         ${False}
         % endif
     - "carrier_delivery_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].by_third_party:
         ${True}
         % else:
         ${False}
@@ -1291,25 +1370,57 @@ attachment:
     - "delivery_party_address_3": ${delivery_parties[2].address.on_one_line(bare=True)}
     - "delivery_email_3": ${delivery_parties[2].delivery_email}
     - "post_office_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
-        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery:
+        % if delivery_parties[2].mail.address != "" and delivery_parties[2].mail.city != "" and delivery_parties[2].mail.state != "":
+        ${delivery_parties[2].mail.address }, ${delivery_parties[2].mail.city}, ${ state_name(delivery_parties[2].mail.state) }
+        % elif delivery_parties[2].mail.address != "" and delivery_parties[2].mail.city != "":
+        ${delivery_parties[2].mail.address }, ${delivery_parties[2].mail.city}
+        % elif delivery_parties[2].mail.address != "" and delivery_parties[2].mail.state != "":
+        ${delivery_parties[2].mail.address }, ${ state_name(delivery_parties[2].mail.state) }
+        % elif delivery_parties[2].mail.city != "" and delivery_parties[2].mail.state != "":
+        ${delivery_parties[2].mail.city}, ${ state_name(delivery_parties[2].mail.state) }
+        % elif delivery_parties[2].mail.address != "":
+        ${delivery_parties[2].mail.address}
+        % elif delivery_parties[2].mail.city != "":
+        ${delivery_parties[2].mail.state}
+        % else:
+        ${state_name(delivery_parties[2].mail.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "carrier_info_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
-        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].by_third_party:
+        % if delivery_parties[2].carrier.address != "" and delivery_parties[2].carrier.city != "" and delivery_parties[2].carrier.state != "":
+        ${delivery_parties[2].carrier.address }, ${delivery_parties[2].carrier.city}, ${ state_name(delivery_parties[2].carrier.state) }
+        % elif delivery_parties[2].carrier.address != "" and delivery_parties[2].carrier.city != "":
+        ${delivery_parties[2].carrier.address }, ${delivery_parties[2].carrier.city}
+        % elif delivery_parties[2].carrier.address != "" and delivery_parties[2].carrier.state != "":
+        ${delivery_parties[2].carrier.address }, ${ state_name(delivery_parties[2].carrier.state) }
+        % elif delivery_parties[2].carrier.city != "" and delivery_parties[2].carrier.state != "":
+        ${delivery_parties[2].carrier.city}, ${ state_name(delivery_parties[2].carrier.state) }
+        % elif delivery_parties[2].carrier.address != "":
+        ${delivery_parties[2].carrier.address}
+        % elif delivery_parties[2].carrier.city != "":
+        ${delivery_parties[2].carrier.state}
+        % else:
+        ${state_name(delivery_parties[2].carrier.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "prison_name_3": ${delivery_parties[2].delivery_jail_name if delivery_parties[2].jail_delivery and delivery_parties[2].knows_delivery_method else ""}
     - "delivery_date_3": ${delivery_parties[2].delivery_date if delivery_parties[2].knows_delivery_method else ""}
     - "delivery_time_3": ${format_time(delivery_parties[2].delivery_time, format='h:mm') if delivery_parties[2].knows_delivery_method and delivery_parties[2].delivery_time != "" else ""}
     - "hand_delivery_3": ${delivery_parties[2].hand_delivery if delivery_parties[2].knows_delivery_method else False}
     - "mail_delivery_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery:
         ${True}
         % else:
         ${False}
         % endif
     - "carrier_delivery_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].by_third_party:
         ${True}
         % else:
         ${False}
@@ -1354,25 +1465,57 @@ attachment:
     - "delivery_party_address_1": ${delivery_parties[0].address.on_one_line(bare=True)}
     - "delivery_email_1": ${delivery_parties[0].delivery_email}
     - "post_office_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
-        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery:
+        % if delivery_parties[0].mail.address != "" and delivery_parties[0].mail.city != "" and delivery_parties[0].mail.state != "":
+        ${delivery_parties[0].mail.address }, ${delivery_parties[0].mail.city}, ${ state_name(delivery_parties[0].mail.state) }
+        % elif delivery_parties[0].mail.address != "" and delivery_parties[0].mail.city != "":
+        ${delivery_parties[0].mail.address }, ${delivery_parties[0].mail.city}
+        % elif delivery_parties[0].mail.address != "" and delivery_parties[0].mail.state != "":
+        ${delivery_parties[0].mail.address }, ${ state_name(delivery_parties[0].mail.state) }
+        % elif delivery_parties[0].mail.city != "" and delivery_parties[0].mail.state != "":
+        ${delivery_parties[0].mail.city}, ${ state_name(delivery_parties[0].mail.state) }
+        % elif delivery_parties[0].mail.address != "":
+        ${delivery_parties[0].mail.address}
+        % elif delivery_parties[0].mail.city != "":
+        ${delivery_parties[0].mail.state}
+        % else:
+        ${state_name(delivery_parties[0].mail.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "carrier_info_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
-        ${delivery_parties[0].mail.on_one_line(bare=True)}
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].by_third_party:
+        % if delivery_parties[0].carrier.address != "" and delivery_parties[0].carrier.city != "" and delivery_parties[0].carrier.state != "":
+        ${delivery_parties[0].carrier.address }, ${delivery_parties[0].carrier.city}, ${ state_name(delivery_parties[0].carrier.state) }
+        % elif delivery_parties[0].carrier.address != "" and delivery_parties[0].carrier.city != "":
+        ${delivery_parties[0].carrier.address }, ${delivery_parties[0].carrier.city}
+        % elif delivery_parties[0].carrier.address != "" and delivery_parties[0].carrier.state != "":
+        ${delivery_parties[0].carrier.address }, ${ state_name(delivery_parties[0].carrier.state) }
+        % elif delivery_parties[0].carrier.city != "" and delivery_parties[0].carrier.state != "":
+        ${delivery_parties[0].carrier.city}, ${ state_name(delivery_parties[0].carrier.state) }
+        % elif delivery_parties[0].carrier.address != "":
+        ${delivery_parties[0].carrier.address}
+        % elif delivery_parties[0].carrier.city != "":
+        ${delivery_parties[0].carrier.state}
+        % else:
+        ${state_name(delivery_parties[0].carrier.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "prison_name_1": ${delivery_parties[0].delivery_jail_name if delivery_parties[0].jail_delivery and delivery_parties[0].knows_delivery_method else ""}
     - "delivery_date_1": ${delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method else ""}
     - "delivery_time_1": ${format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method and delivery_parties[0].delivery_time != "" else ""}
     - "hand_delivery_1": ${delivery_parties[0].hand_delivery if delivery_parties[0].knows_delivery_method else False}
     - "mail_delivery_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "usps":
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery:
         ${True}
         % else:
         ${False}
         % endif
     - "carrier_delivery_1": |
-        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery and delivery_parties[0].mail_type == "third":
+        % if delivery_parties[0].knows_delivery_method and delivery_parties[0].by_third_party:
         ${True}
         % else:
         ${False}
@@ -1391,25 +1534,57 @@ attachment:
     - "delivery_party_address_2": ${delivery_parties[1].address.on_one_line(bare=True)}
     - "delivery_email_2": ${delivery_parties[1].delivery_email}
     - "post_office_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
-        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery:
+        % if delivery_parties[1].mail.address != "" and delivery_parties[1].mail.city != "" and delivery_parties[1].mail.state != "":
+        ${delivery_parties[1].mail.address }, ${delivery_parties[1].mail.city}, ${ state_name(delivery_parties[1].mail.state) }
+        % elif delivery_parties[1].mail.address != "" and delivery_parties[1].mail.city != "":
+        ${delivery_parties[1].mail.address }, ${delivery_parties[1].mail.city}
+        % elif delivery_parties[1].mail.address != "" and delivery_parties[1].mail.state != "":
+        ${delivery_parties[1].mail.address }, ${ state_name(delivery_parties[1].mail.state) }
+        % elif delivery_parties[1].mail.city != "" and delivery_parties[1].mail.state != "":
+        ${delivery_parties[1].mail.city}, ${ state_name(delivery_parties[1].mail.state) }
+        % elif delivery_parties[1].mail.address != "":
+        ${delivery_parties[1].mail.address}
+        % elif delivery_parties[1].mail.city != "":
+        ${delivery_parties[1].mail.state}
+        % else:
+        ${state_name(delivery_parties[1].mail.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "carrier_info_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
-        ${delivery_parties[1].mail.on_one_line(bare=True)}
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].by_third_party:
+        % if delivery_parties[1].carrier.address != "" and delivery_parties[1].carrier.city != "" and delivery_parties[1].carrier.state != "":
+        ${delivery_parties[1].carrier.address }, ${delivery_parties[1].carrier.city}, ${ state_name(delivery_parties[1].carrier.state) }
+        % elif delivery_parties[1].carrier.address != "" and delivery_parties[1].carrier.city != "":
+        ${delivery_parties[1].carrier.address }, ${delivery_parties[1].carrier.city}
+        % elif delivery_parties[1].carrier.address != "" and delivery_parties[1].carrier.state != "":
+        ${delivery_parties[1].carrier.address }, ${ state_name(delivery_parties[1].carrier.state) }
+        % elif delivery_parties[1].carrier.city != "" and delivery_parties[1].carrier.state != "":
+        ${delivery_parties[1].carrier.city}, ${ state_name(delivery_parties[1].carrier.state) }
+        % elif delivery_parties[1].carrier.address != "":
+        ${delivery_parties[1].carrier.address}
+        % elif delivery_parties[1].carrier.city != "":
+        ${delivery_parties[1].carrier.state}
+        % else:
+        ${state_name(delivery_parties[1].carrier.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "prison_name_2": ${delivery_parties[1].delivery_jail_name if delivery_parties[1].jail_delivery and delivery_parties[1].knows_delivery_method else ""}
     - "delivery_date_2": ${delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method else ""}
     - "delivery_time_2": ${format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method and delivery_parties[1].delivery_time != "" else ""}
     - "hand_delivery_2": ${delivery_parties[1].hand_delivery if delivery_parties[1].knows_delivery_method else False}
     - "mail_delivery_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "usps":
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery:
         ${True}
         % else:
         ${False}
         % endif
     - "carrier_delivery_2": |
-        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery and delivery_parties[1].mail_type == "third":
+        % if delivery_parties[1].knows_delivery_method and delivery_parties[1].by_third_party:
         ${True}
         % else:
         ${False}
@@ -1428,25 +1603,57 @@ attachment:
     - "delivery_party_address_3": ${delivery_parties[2].address.on_one_line(bare=True)}
     - "delivery_email_3": ${delivery_parties[2].delivery_email}
     - "post_office_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
-        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery:
+        % if delivery_parties[2].mail.address != "" and delivery_parties[2].mail.city != "" and delivery_parties[2].mail.state != "":
+        ${delivery_parties[2].mail.address }, ${delivery_parties[2].mail.city}, ${ state_name(delivery_parties[2].mail.state) }
+        % elif delivery_parties[2].mail.address != "" and delivery_parties[2].mail.city != "":
+        ${delivery_parties[2].mail.address }, ${delivery_parties[2].mail.city}
+        % elif delivery_parties[2].mail.address != "" and delivery_parties[2].mail.state != "":
+        ${delivery_parties[2].mail.address }, ${ state_name(delivery_parties[2].mail.state) }
+        % elif delivery_parties[2].mail.city != "" and delivery_parties[2].mail.state != "":
+        ${delivery_parties[2].mail.city}, ${ state_name(delivery_parties[2].mail.state) }
+        % elif delivery_parties[2].mail.address != "":
+        ${delivery_parties[2].mail.address}
+        % elif delivery_parties[2].mail.city != "":
+        ${delivery_parties[2].mail.state}
+        % else:
+        ${state_name(delivery_parties[2].mail.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "carrier_info_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
-        ${delivery_parties[2].mail.on_one_line(bare=True)}
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].by_third_party:
+        % if delivery_parties[2].carrier.address != "" and delivery_parties[2].carrier.city != "" and delivery_parties[2].carrier.state != "":
+        ${delivery_parties[2].carrier.address }, ${delivery_parties[2].carrier.city}, ${ state_name(delivery_parties[2].carrier.state) }
+        % elif delivery_parties[2].carrier.address != "" and delivery_parties[2].carrier.city != "":
+        ${delivery_parties[2].carrier.address }, ${delivery_parties[2].carrier.city}
+        % elif delivery_parties[2].carrier.address != "" and delivery_parties[2].carrier.state != "":
+        ${delivery_parties[2].carrier.address }, ${ state_name(delivery_parties[2].carrier.state) }
+        % elif delivery_parties[2].carrier.city != "" and delivery_parties[2].carrier.state != "":
+        ${delivery_parties[2].carrier.city}, ${ state_name(delivery_parties[2].carrier.state) }
+        % elif delivery_parties[2].carrier.address != "":
+        ${delivery_parties[2].carrier.address}
+        % elif delivery_parties[2].carrier.city != "":
+        ${delivery_parties[2].carrier.state}
+        % else:
+        ${state_name(delivery_parties[2].carrier.state)}
+        % endif
+        % else:
+        ${ "" }
         % endif
     - "prison_name_3": ${delivery_parties[2].delivery_jail_name if delivery_parties[2].jail_delivery and delivery_parties[2].knows_delivery_method else ""}
     - "delivery_date_3": ${delivery_parties[2].delivery_date if delivery_parties[2].knows_delivery_method else ""}
     - "delivery_time_3": ${format_time(delivery_parties[2].delivery_time, format='h:mm') if delivery_parties[2].knows_delivery_method and delivery_parties[2].delivery_time != "" else ""}
     - "hand_delivery_3": ${delivery_parties[2].hand_delivery if delivery_parties[2].knows_delivery_method else False}
     - "mail_delivery_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "usps":
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery:
         ${True}
         % else:
         ${False}
         % endif
     - "carrier_delivery_3": |
-        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].mail_delivery and delivery_parties[2].mail_type == "third":
+        % if delivery_parties[2].knows_delivery_method and delivery_parties[2].by_third_party:
         ${True}
         % else:
         ${False}
@@ -1498,9 +1705,79 @@ attachment:
     - "by_email_4": ${x.email_delivery}
     - "efsp_4": ${x.efm_delivery}
     - "physical_method_4": ${True if x.mail_delivery or x.by_third_party or x.hand_delivery or x.jail_delivery else False}
-    - "regular_or_third_mail_4": ${True if x.mail_delivery else False}
-    - "mailbox_third_party_address_4": ${x.mail.on_one_line(bare=True) if x.mail_delivery else ""}
-    - "carrier_location_4": ${""}
+    - "regular_or_third_mail_4": ${True if x.mail_delivery or x.by_third_party else False}
+    - "mailbox_third_party_address_4": |
+        % if x.knows_delivery_method and x.mail_delivery and x.by_third_party:
+        % if x.mail.address != "" and x.mail.city != "" and x.mail.state != "":
+        Mail: ${x.mail.address }, ${x.mail.city}, ${ state_name(x.mail.state) }
+        % elif x.mail.address != "" and x.mail.city != "":
+        Mail: ${x.mail.address }, ${x.mail.city}
+        % elif x.mail.address != "" and x.mail.state != "":
+        Mail: ${x.mail.address }, ${ state_name(x.mail.state) }
+        % elif x.mail.city != "" and x.mail.state != "":
+        Mail: ${x.mail.city}, ${ state_name(x.mail.state) }
+        % elif x.mail.address != "":
+        Mail: ${x.mail.address}
+        % elif x.mail.city != "":
+        Mail: ${x.mail.state}
+        % else:
+        Mail: ${state_name(x.mail.state)}
+        % endif
+        % elif x.knows_delivery_method and x.mail_delivery:
+        % if x.mail.address != "" and x.mail.city != "" and x.mail.state != "":
+        ${x.mail.address }, ${x.mail.city}, ${ state_name(x.mail.state) }
+        % elif x.mail.address != "" and x.mail.city != "":
+        ${x.mail.address }, ${x.mail.city}
+        % elif x.mail.address != "" and x.mail.state != "":
+        ${x.mail.address }, ${ state_name(x.mail.state) }
+        % elif x.mail.city != "" and x.mail.state != "":
+        ${x.mail.city}, ${ state_name(x.mail.state) }
+        % elif x.mail.address != "":
+        ${x.mail.address}
+        % elif x.mail.city != "":
+        ${x.mail.state}
+        % else:
+        ${state_name(x.mail.state)}
+        % endif
+        % elif x.knows_delivery_method and x.by_third_party:
+        % if x.carrier.address != "" and x.carrier.city != "" and x.carrier.state != "":
+        ${x.carrier.address }, ${x.carrier.city}, ${ state_name(x.carrier.state) }
+        % elif x.carrier.address != "" and x.carrier.city != "":
+        ${x.carrier.address }, ${x.carrier.city}
+        % elif x.carrier.address != "" and x.carrier.state != "":
+        ${x.carrier.address }, ${ state_name(x.carrier.state) }
+        % elif x.carrier.city != "" and x.carrier.state != "":
+        ${x.carrier.city}, ${ state_name(x.carrier.state) }
+        % elif x.carrier.address != "":
+        ${x.carrier.address}
+        % elif x.carrier.city != "":
+        ${x.carrier.state}
+        % else:
+        ${state_name(x.carrier.state)}
+        % endif
+        % else:
+        ${ "" }
+        % endif
+    - "carrier_location_4": |
+        % if x.knows_delivery_method and x.mail_delivery and x.by_third_party:
+        % if x.carrier.address != "" and x.carrier.city != "" and x.carrier.state != "":
+        Carrier: ${x.carrier.address }, ${x.carrier.city}, ${ state_name(x.carrier.state) }
+        % elif x.carrier.address != "" and x.carrier.city != "":
+        Carrier: ${x.carrier.address }, ${x.carrier.city}
+        % elif x.carrier.address != "" and x.carrier.state != "":
+        Carrier: ${x.carrier.address }, ${ state_name(x.carrier.state) }
+        % elif x.carrier.city != "" and x.carrier.state != "":
+        Carrier: ${x.carrier.city}, ${ state_name(x.carrier.state) }
+        % elif x.carrier.address != "":
+        Carrier: ${x.carrier.address}
+        % elif x.carrier.city != "":
+        Carrier: ${x.carrier.state}
+        % else:
+        Carrier: ${state_name(x.carrier.state)}
+        % endif
+        % else:
+        ${ "" }
+        % endif
     - "hand_delivery_4": ${x.hand_delivery}
     - "hand_address_4": ${x.hand_delivery_address.on_one_line(bare=True)}
     - "prison_mail_4": ${x.jail_delivery}
@@ -1526,9 +1803,79 @@ attachment:
     - "by_email_5": ${x.second_person.email_delivery}
     - "efsp_5": ${x.second_person.efm_delivery}
     - "physical_method_5": ${True if x.second_person.mail_delivery or x.second_person.by_third_party or x.second_person.hand_delivery or x.second_person.jail_delivery else False}
-    - "regular_or_third_mail_5": ${True if x.second_person.mail_delivery else False}
-    - "mailbox_third_party_address_5": ${x.second_person.mail.on_one_line(bare=True) if x.second_person.mail_delivery else ""}
-    - "carrier_location_5": ${""}
+    - "regular_or_third_mail_5": ${True if x.second_person.mail_delivery or x.second_person.by_third_party else False}
+    - "mailbox_third_party_address_5": |
+        % if x.second_person.knows_delivery_method and x.second_person.mail_delivery and x.second_person.by_third_party:
+        % if x.second_person.mail.address != "" and x.second_person.mail.city != "" and x.second_person.mail.state != "":
+        Mail: ${x.second_person.mail.address }, ${x.second_person.mail.city}, ${ state_name(x.second_person.mail.state) }
+        % elif x.second_person.mail.address != "" and x.second_person.mail.city != "":
+        Mail: ${x.second_person.mail.address }, ${x.second_person.mail.city}
+        % elif x.second_person.mail.address != "" and x.second_person.mail.state != "":
+        Mail: ${x.second_person.mail.address }, ${ state_name(x.second_person.mail.state) }
+        % elif x.second_person.mail.city != "" and x.second_person.mail.state != "":
+        Mail: ${x.second_person.mail.city}, ${ state_name(x.second_person.mail.state) }
+        % elif x.second_person.mail.address != "":
+        Mail: ${x.second_person.mail.address}
+        % elif x.second_person.mail.city != "":
+        Mail: ${x.second_person.mail.state}
+        % else:
+        Mail: ${state_name(x.second_person.mail.state)}
+        % endif
+        % elif x.second_person.knows_delivery_method and x.second_person.mail_delivery:
+        % if x.second_person.mail.address != "" and x.second_person.mail.city != "" and x.second_person.mail.state != "":
+        ${x.second_person.mail.address }, ${x.second_person.mail.city}, ${ state_name(x.second_person.mail.state) }
+        % elif x.second_person.mail.address != "" and x.second_person.mail.city != "":
+        ${x.second_person.mail.address }, ${x.second_person.mail.city}
+        % elif x.second_person.mail.address != "" and x.second_person.mail.state != "":
+        ${x.second_person.mail.address }, ${ state_name(x.second_person.mail.state) }
+        % elif x.second_person.mail.city != "" and x.second_person.mail.state != "":
+        ${x.second_person.mail.city}, ${ state_name(x.second_person.mail.state) }
+        % elif x.second_person.mail.address != "":
+        ${x.second_person.mail.address}
+        % elif x.second_person.mail.city != "":
+        ${x.second_person.mail.state}
+        % else:
+        ${state_name(x.second_person.mail.state)}
+        % endif
+        % elif x.second_person.knows_delivery_method and x.second_person.by_third_party:
+        % if x.second_person.carrier.address != "" and x.second_person.carrier.city != "" and x.second_person.carrier.state != "":
+        ${x.second_person.carrier.address }, ${x.second_person.carrier.city}, ${ state_name(x.second_person.carrier.state) }
+        % elif x.second_person.carrier.address != "" and x.second_person.carrier.city != "":
+        ${x.second_person.carrier.address }, ${x.second_person.carrier.city}
+        % elif x.second_person.carrier.address != "" and x.second_person.carrier.state != "":
+        ${x.second_person.carrier.address }, ${ state_name(x.second_person.carrier.state) }
+        % elif x.second_person.carrier.city != "" and x.second_person.carrier.state != "":
+        ${x.second_person.carrier.city}, ${ state_name(x.second_person.carrier.state) }
+        % elif x.second_person.carrier.address != "":
+        ${x.second_person.carrier.address}
+        % elif x.second_person.carrier.city != "":
+        ${x.second_person.carrier.state}
+        % else:
+        ${state_name(x.second_person.carrier.state)}
+        % endif
+        % else:
+        ${ "" }
+        % endif
+    - "carrier_location_5": |
+        % if x.second_person.knows_delivery_method and x.second_person.mail_delivery and x.second_person.by_third_party:
+        % if x.second_person.carrier.address != "" and x.second_person.carrier.city != "" and x.second_person.carrier.state != "":
+        Carrier: ${x.second_person.carrier.address }, ${x.second_person.carrier.city}, ${ state_name(x.second_person.carrier.state) }
+        % elif x.second_person.carrier.address != "" and x.second_person.carrier.city != "":
+        Carrier: ${x.second_person.carrier.address }, ${x.second_person.carrier.city}
+        % elif x.second_person.carrier.address != "" and x.second_person.carrier.state != "":
+        Carrier: ${x.second_person.carrier.address }, ${ state_name(x.second_person.carrier.state) }
+        % elif x.second_person.carrier.city != "" and x.second_person.carrier.state != "":
+        Carrier: ${x.second_person.carrier.city}, ${ state_name(x.second_person.carrier.state) }
+        % elif x.second_person.carrier.address != "":
+        Carrier: ${x.second_person.carrier.address}
+        % elif x.second_person.carrier.city != "":
+        Carrier: ${x.second_person.carrier.state}
+        % else:
+        Carrier: ${state_name(x.second_person.carrier.state)}
+        % endif
+        % else:
+        ${ "" }
+        % endif
     - "hand_delivery_5": ${x.second_person.hand_delivery}
     - "hand_address_5": ${x.second_person.hand_delivery_address.on_one_line(bare=True)}
     - "prison_mail_5": ${x.second_person.jail_delivery}
@@ -1780,36 +2127,15 @@ review:
         * Hand
       % endif
       % if x.mail_delivery == True:
-        * Mail
+        * US Mail
+      % endif
+      % if x.by_third_party == True:
+        * Third-party carrier
       % endif
       % if x.jail_delivery == True:
         * Mail from prison or jail
       % endif
     show if: x.knows_delivery_method and not x.agree
-  - Edit: x.delivery_email
-    button: |
-      **Email address for delivery**:
-      ${x.delivery_email}
-    show if: x.knows_delivery_method and (x.efm_delivery or x.email_delivery) and not x.agree
-  - Edit: x.mail.address
-    button: |
-      % if x.mail_type == "usps":
-      **Address of mailbox or post office:**
-      % elif x.mail_type == "third":
-      **Address of third-party carrier:**
-      % endif
-      ${x.mail.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.mail_delivery and not x.agree and (x.mail_type == "usps" or x.mail_type == "third")
-  - Edit: x.hand_delivery_address.address
-    button: |
-      **Address for hand delivery:**
-      ${x.hand_delivery_address.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.hand_delivery and not x.agree
-  - Edit: x.delivery_jail_name
-    button: |
-      **Name of prison or jail**:
-      ${x.delivery_jail_name}
-    show if: x.knows_delivery_method and x.jail_delivery and not x.agree
   - Edit: x.delivery_date
     button: |
       **Delivery on:**
@@ -1874,34 +2200,13 @@ review:
       % if x.mail_delivery == True:
         * Mail
       % endif
+      % if x.by_third_party == True:
+        * Third-party carrier
+      % endif
       % if x.jail_delivery == True:
         * Mail from prison or jail
       % endif
     show if: x.knows_delivery_method
-  - Edit: x.delivery_email
-    button: |
-      **Email address for delivery**:
-      ${x.delivery_email}
-    show if: x.knows_delivery_method and (x.efm_delivery or x.email_delivery)
-  - Edit: x.mail.address
-    button: |
-      % if x.mail_type == "usps":
-      **Address of mailbox or post office:**
-      % elif x.mail_type == "third":
-      **Address of third-party carrier:**
-      % endif
-      ${x.mail.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.mail_delivery and not x.agree and (x.mail_type == "usps" or x.mail_type == "third")
-  - Edit: x.hand_delivery_address.address
-    button: |
-      **Address for hand delivery:**
-      ${x.hand_delivery_address.on_one_line(bare=True)}
-    show if: x.knows_delivery_method and x.hand_delivery
-  - Edit: x.delivery_jail_name
-    button: |
-      **Name of prison or jail**:
-      ${x.delivery_jail_name}
-    show if: x.knows_delivery_method and x.jail_delivery
   - Edit: x.delivery_date
     button: |
       **Delivery on:**
