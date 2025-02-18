@@ -703,10 +703,10 @@ fields:
 ---
 id: other reasons
 question: |
-  Other reasons to delay foreclosure sale
+  Do you have other reasons why you want to delay the foreclosure sale?
 fields:
-  - Do you have other reasons why you want to delay the foreclosure sale?: other_reasons
-    datatype: yesnowide
+  - no label: other_reasons
+    datatype: yesnoradio
   - What other reasons?: other_reasons_text
     maxlength: 160
     input type: area
