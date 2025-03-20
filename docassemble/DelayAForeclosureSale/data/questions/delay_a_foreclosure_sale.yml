@@ -90,7 +90,7 @@ code: |
 
   nav.set_section('section_delay_reasons')
   if mod_pending:
-    hamp_loan
+    #hamp_loan
     sale_permitted
     include_mod_contract
   if short_sale:
@@ -99,7 +99,7 @@ code: |
   other_reasons
   set_progress(60)
   if users.number_gathered() > 1:
-    agreement_intro
+    agreement_intro   
     for index, party in enumerate(users):
       if index > 0:
         if party.agree:
@@ -196,7 +196,7 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Delay a foreclosure sale** Easy Form.
 
-  If your home has been foreclosed on, you can ask the court to delay the sale of your home by filing a *Motion to Stay Foreclosure Sale*. This program helps you complete the motion, as well as other forms you may need.
+  If your property has been foreclosed on, you can ask the court to delay the sale of your property by filing a *Motion to Stay Foreclosure Sale*. This program helps you complete the motion, as well as other forms you may need.
   
   To learn more, read ILAO's article about [**stopping a judicial sale of a home**](https://www.illinoislegalaid.org/legal-information/stopping-judicial-sale-home).
 field: sees_nav_bar
@@ -214,7 +214,7 @@ subquestion: |
   * Names and addresses of the other parties' lawyers, and
   * A **{good reason}** for asking to delay the foreclosure sale.
 
-  You can find most of this information on the court papers you have about this case. 
+  You can find information about dates, other parties, and addresses in the court papers you have about this case. 
 
   Set aside 10 to 20 minutes to finish this program. You can log in and save your work to return to later. 
  
@@ -223,10 +223,10 @@ subquestion: |
   Click on **{green words}** to learn what they mean. Some pages have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that helps explain things.
 terms:
   - good reason: |
-      A good reason for asking to delay the foreclosure sale could be you have:
+      A good reason for asking to delay the foreclosure sale could be that:
       
-      * A loan modification application pending, or
-      * A short sale contract for the property being sold as a result of foreclosure.
+      * You applied for a loan modification and haven't heard back yet, or
+      * You need a little more time to sell your home.
 ---
 template: help_example
 subject: |
@@ -250,7 +250,7 @@ continue button field: sale_info
 question: |
   About foreclosure sales
 subquestion: |
-  A foreclosure sale is when property is sold as ordered by a judge following a foreclosure case. Delaying a foreclosure sale is also called "staying a sale." Staying a sale does not undo the foreclosure. The sale will likely still happen later. The judge will decide whether to delay the sale.
+  A foreclosure sale is when property is sold as ordered by a judge following a foreclosure case. Delaying a foreclosure sale is also called "staying a sale." Staying a sale does not end the foreclosure case. The judge will decide whether to delay the sale.
 
   You can use this program if the judge has ordered the sale of your foreclosed property and set a date for the sale. If that hasn't happened yet, you may have other options. ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure) can help you learn what your options are.
 
@@ -260,9 +260,9 @@ template: why_delay
 subject: |
   **Reasons to delay a foreclosure sale**
 content: |
-  It is easier to undo a judgment of foreclosure than a foreclosure sale. Once the foreclosed property is sold, the new owner may be able to evict you.
-
-  If your foreclosed property has not been sold, you have more choices. You may be able to ask for a loan modification, declare bankruptcy, secure financing, do a short sale, or find another way to stay in your home. To learn more, read ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure).
+  The foreclosure sale is not the final step in a foreclosure case. However, most options to stop foreclosure are not available after the sale unless the sale is undone. 
+  
+  You can ask to delay the sale so you can pursue another option. Such options include loan modification, selling the home, or declaring bankruptcy. To learn more, read ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure).
 ---
 id: judgment entered check
 question: |
@@ -362,16 +362,16 @@ fields:
     datatype: yesnowide
 ---
 id: no notice kickout
-event: no_notice_kickout
+continue button field: no_notice_kickout
 question: |
-    Sorry
+    About the sale date
 subquestion: |
-  You cannot use this program unless you have a *Notice of Foreclosure Sale* or know when the sale is going to happen. You may want to contact the court to ask if you should have gotten a notice from them.
+  This program can still make forms for you even without the sale date, but you may want to contact the court to ask if you should have gotten a notice from them. They may have scheduled a date already.
   
   To learn more about what you can do about a foreclosure, read ILAO's article on [**Responding to a mortgage foreclosure case**](https://www.illinoislegalaid.org/legal-information/responding-mortgage-foreclosure-case).
-buttons:
-  - Exit: exit
-  - Restart: restart
+#buttons:
+#  - Exit: exit
+#  - Restart: restart
 ---
 sets:
   - users[i].name.first
@@ -664,7 +664,7 @@ fields:
 ---
 id: modification sale permitted
 question: |
-  Does the modification allow the lender to sell the property now?
+  Did you get a modification offer that says your mortgage company will not sell the property if you accept the offer?
 fields:
   - no label: sale_permitted    
     datatype: yesnomaybe
@@ -674,7 +674,11 @@ continue button field: include_mod_contract
 question: |
   Attach the loan modification contract
 subquestion: |
-  Include a copy of the loan modification contract when you file your forms.
+  When you file your forms, you should include a copy of:
+  
+  * your loan modification application, 
+  * any loan modification offers you received, and 
+  * any proof that you accepted the offer or made your payments.
 ---
 id: short sale contract
 question: |
@@ -682,7 +686,7 @@ question: |
 subquestion: |
   A short sale is when you sell your property for less than you owe your lender. If someone offers to buy your home in a short sale, your lender can choose whether to take their offer.
 
-  If you short sell your property, all the money will go to your lender. Your lender may forgive the rest of your loan or may try to get you to pay the rest.
+  If you short sell your property, all the money will go to your lender. You may want to ask a lawyer to make sure you know if you still owe on the loan after the short sale. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 fields:
   - no label: short_sale
     datatype: yesnomaybe
@@ -708,8 +712,9 @@ fields:
   - no label: other_reasons
     datatype: yesnoradio
   - What other reasons?: other_reasons_text
-    maxlength: 160
+    maxlength: 250
     input type: area
+    rows: 3
     show if:
       variable: other_reasons
       is: True
@@ -756,7 +761,7 @@ fields:
   - Suffix: x.lawyer.name.suffix
     code: |
       name_suffix()
-    required: False  
+    required: False   
 ---
 id: delivery party address
 sets:
@@ -1210,11 +1215,12 @@ attachment:
     - "mod_pending_true": ${mod_pending}
     - "mod_pending_false": ${True if mod_pending == False else False}
     - "mod_pending_idk": ${True if mod_pending is None else False}
-    - "hamp_idk": ${True if hamp_loan is None else False}
-    - "hamp_false": ${True if hamp_loan == False else False}
-    - "hamp_true": ${hamp_loan}
-    - "not_permitted_true": ${True if sale_permitted == False and mod_pending else False}
-    - "not_permitted_false": ${ True if sale_permitted and mod_pending else False}
+    #- "hamp_idk": ${True if hamp_loan is None else False}
+    #- "hamp_false": ${True if hamp_loan == False else False}
+    #- "hamp_true": ${hamp_loan}
+    - "hamp_false": ${True if mod_pending else False}
+    - "not_permitted_true": ${True if sale_permitted and mod_pending else False}
+    - "not_permitted_false": ${ True if sale_permitted == False and mod_pending else False}
     - "not_permitted_idk": ${True if sale_permitted is None and mod_pending else False}
     - "sale_contract_idk": ${True if short_sale is None else False}
     - "sale_contract_false": ${True if short_sale == False else False}
@@ -1962,10 +1968,14 @@ review:
     button: |
         **Date judge signed the Judgment of Foreclosure:**
         ${judge_sign_date}
-  - Edit: sale_date
+  - Edit: no_notice
     button: |
         **Date property is scheduled to be sold:**
+        % if no_notice:
+        I don't know.
+        % else:
         ${sale_date}
+        % endif
   - Edit: users.revisit
     button: |
       **Your party: (Edit to change name, address, and other info)**
@@ -2244,7 +2254,7 @@ review:
     show if: mod_pending
   - Edit: sale_permitted
     button: |
-      **Does the modification allow the lender to sell the property now?**
+      **Did you receive a modification offer that says your mortgage company will not sell the home if you accept the offer?**
       % if sale_permitted is None:
       I don't know
       % else:
@@ -2356,10 +2366,14 @@ review:
     button: |
         **Date judge signed the Judgment of Foreclosure:**
         ${judge_sign_date}
-  - Edit: sale_date
+  - Edit: no_notice
     button: |
         **Date property is scheduled to be sold:**
+        % if no_notice:
+        I don't know.
+        % else:
         ${sale_date}
+        % endif
   - Edit: users.revisit
     button: |
       **Your party: (Edit to change name, address, and other info)**
@@ -2412,7 +2426,7 @@ review:
     show if: mod_pending
   - Edit: sale_permitted
     button: |
-      **Does the modification allow the lender to sell the property now?**
+      **Did you receive a modification offer that says your mortgage company will not sell the home if you accept the offer?**
       % if sale_permitted is None:
       I don't know
       % else:
