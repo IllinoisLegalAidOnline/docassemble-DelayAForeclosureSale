@@ -90,7 +90,6 @@ code: |
 
   nav.set_section('section_delay_reasons')
   if mod_pending:
-    #hamp_loan
     sale_permitted
     include_mod_contract
   if short_sale:
@@ -126,6 +125,7 @@ code: |
   #nav.set_section('section_about_you')
   users[0].has_email_address 
 
+  evidence
   #nav.set_section('section_filing_information')
   make_signer_list
   e_signature
@@ -252,15 +252,17 @@ question: |
 subquestion: |
   A foreclosure sale is when property is sold as ordered by a judge following a foreclosure case. Delaying a foreclosure sale is also called "staying a sale." Staying a sale does not end the foreclosure case. The judge will decide whether to delay the sale.
 
+  ${collapse_template(why_delay)}
+
   You can use this program if the judge has ordered the sale of your foreclosed property and set a date for the sale. If that hasn't happened yet, you may have other options. ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure) can help you learn what your options are.
 
-  ${collapse_template(why_delay)}
+  **Note:** if you are a business or your foreclosed property is a commercial property, you may want to talk to a lawyer about your case before using this program. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area. If you are a corporation, you should not use this program.
 ---
 template: why_delay
 subject: |
   **Reasons to delay a foreclosure sale**
 content: |
-  The foreclosure sale is not the final step in a foreclosure case. However, most options to stop foreclosure are not available after the sale unless the sale is undone. 
+  The foreclosure sale is not the final step in a foreclosure case. However, most options to stop foreclosure are not available after the sale unless the sale is set aside (undone). 
   
   You can ask to delay the sale so you can pursue another option. Such options include loan modification, selling the home, or declaring bankruptcy. To learn more, read ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure).
 ---
@@ -362,16 +364,16 @@ fields:
     datatype: yesnowide
 ---
 id: no notice kickout
-continue button field: no_notice_kickout
+event: no_notice_kickout
 question: |
-    About the sale date
+    Sorry
 subquestion: |
-  This program can still make forms for you even without the sale date, but you may want to contact the court to ask if you should have gotten a notice from them. They may have scheduled a date already.
+  You cannot use this program unless you have a *Notice of Foreclosure Sale* or know when the sale is going to happen. You may want to contact the court to ask if you should have gotten a notice from them.
   
   To learn more about what you can do about a foreclosure, read ILAO's article on [**Responding to a mortgage foreclosure case**](https://www.illinoislegalaid.org/legal-information/responding-mortgage-foreclosure-case).
-#buttons:
-#  - Exit: exit
-#  - Restart: restart
+buttons:
+  - Exit: exit
+  - Restart: restart
 ---
 sets:
   - users[i].name.first
@@ -650,21 +652,11 @@ question: |
 fields:
   - no label: mod_pending
     datatype: yesnomaybe
----
-id: hamp
-question: |
-  Is your pending application for a HAMP loan modification?
-subquestion: |
-  HAMP stands for Home Affordable Modification Program.
 
-  HAMP was a program run from 2009 to 2016 that offered homeowners who are at risk of foreclosure reduced monthly mortgage payments. If applied for a loan modification after 2016, you did not apply for a HAMP loan modification and should click **No** here.
-fields:
-  - no label: hamp_loan
-    datatype: yesnomaybe
 ---
 id: modification sale permitted
 question: |
-  Did you get a modification offer that says your mortgage company will not sell the property if you accept the offer?
+  Does the loan modification offer say your mortgage company will not sell the home if you accept the offer?
 fields:
   - no label: sale_permitted    
     datatype: yesnomaybe
@@ -676,9 +668,9 @@ question: |
 subquestion: |
   When you file your forms, you should include a copy of:
   
-  * your loan modification application, 
-  * any loan modification offers you received, and 
-  * any proof that you accepted the offer or made your payments.
+  * Your loan modification application, 
+  * Any loan modification offers you received, and 
+  * Any proof that you accepted the offer or made your payments.
 ---
 id: short sale contract
 question: |
@@ -698,6 +690,44 @@ question: |
 subquestion: | 
   Include a copy of the sale contract when you file your forms.
 ---
+depends on:
+  - mod_pending
+  - short_sale
+  - already_delayed
+code: |
+  if mod_pending and short_sale and already_delayed:
+    which_evidence = "the loan modification contract, the sale contract, and previous foreclosure stay orders"
+  elif mod_pending and short_sale:
+    which_evidence = "the loan modification contract and the sale contract"
+  elif mod_pending and already_delayed:
+    which_evidence = "the loan modification contract and previous foreclosure stay orders"
+  elif short_sale and already_delayed:
+    which_evidence = "the sale contract and previous foreclosure stay orders"
+  elif mod_pending:
+    which_evidence = "the loan modification contract"
+  elif short_sale:
+    which_evidence = "the sale contract"
+  elif already_delayed:
+    which_evidence = "previous foreclosure stay orders"
+  else:
+    which_evidence = "none"
+---
+id: evidence
+continue button field: evidence
+question: |
+  Evidence
+subquestion: |
+  % if which_evidence != "none":
+  You should attach ${which_evidence} to your motion. Make sure to include those and any other important documents when you file your forms. 
+  % else:
+  You can attach evidence that you need the foreclosure sale to be delayed to your motion. Evidence can be things like paperwork or emails from your lender.
+  % endif
+  
+  Be sure to attach copies of your evidence to the forms you serve to other parties.
+
+  **Note:** If you are e-filing, you can upload other documents as attachments during the e-filing process. If you are paper filing, bring copies of the documents to the clerk's office so you can attach them to the complaint.
+---
+
 id: need time
 question: |
   Do you need more time to explore your options or seek advice?
@@ -1215,9 +1245,6 @@ attachment:
     - "mod_pending_true": ${mod_pending}
     - "mod_pending_false": ${True if mod_pending == False else False}
     - "mod_pending_idk": ${True if mod_pending is None else False}
-    #- "hamp_idk": ${True if hamp_loan is None else False}
-    #- "hamp_false": ${True if hamp_loan == False else False}
-    #- "hamp_true": ${hamp_loan}
     - "hamp_false": ${True if mod_pending else False}
     - "not_permitted_true": ${True if sale_permitted and mod_pending else False}
     - "not_permitted_false": ${ True if sale_permitted == False and mod_pending else False}
@@ -2243,18 +2270,9 @@ review:
         % else:
         ${word(yesno(mod_pending))}
         % endif
-  - Edit: hamp_loan
-    button: |
-      **Is your application for a HAMP loan modification?**
-      % if hamp_loan is None:
-      I don't know
-      % else:
-      ${word(yesno(hamp_loan))}
-      % endif
-    show if: mod_pending
   - Edit: sale_permitted
     button: |
-      **Did you receive a modification offer that says your mortgage company will not sell the home if you accept the offer?**
+      **Does the loan modification offer say your mortgage company will not sell the home if you accept the offer?**
       % if sale_permitted is None:
       I don't know
       % else:
@@ -2415,18 +2433,9 @@ review:
         % else:
         ${word(yesno(mod_pending))}
         % endif
-  - Edit: hamp_loan
-    button: |
-      **Is your application for a HAMP loan modification?**
-      % if hamp_loan is None:
-      I don't know
-      % else:
-      ${word(yesno(hamp_loan))}
-      % endif
-    show if: mod_pending
   - Edit: sale_permitted
     button: |
-      **Did you receive a modification offer that says your mortgage company will not sell the home if you accept the offer?**
+      **Does the loan modification offer say your mortgage company will not sell the home if you accept the offer?**
       % if sale_permitted is None:
       I don't know
       % else:
