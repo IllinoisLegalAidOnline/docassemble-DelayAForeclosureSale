@@ -244,6 +244,18 @@ subquestion: |
   You will also need to send copies of your forms to the other parties in the case.
   
   You can also download instructions at the end of this program. The instructions can guide you through filing your forms and going to court.
+
+  ${collapse_template(what_fees)}
+---
+template: what_fees
+subject: |
+  **Will I need to pay any court fees?**
+content: |
+  If you have already paid to file an appearance in the foreclosure case, you do not need to pay additional court costs to file this motion. You also do not need to pay if you have alrady gotten a fee waiver.
+
+  If you still need to file an appearance with the court, you can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance).
+
+  If you would like to ask for a fee waiver, you can use ILAO's [**Fee waiver Easy Form**](https://www.illinoislegalaid.org/legal-information/fee-waiver).
 ---
 id: foreclosure sale info
 continue button field: sale_info
