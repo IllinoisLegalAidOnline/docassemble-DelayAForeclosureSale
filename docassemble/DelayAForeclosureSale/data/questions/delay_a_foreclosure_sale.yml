@@ -125,7 +125,7 @@ code: |
   #nav.set_section('section_about_you')
   users[0].has_email_address 
 
-  evidence
+  attach_docs
   #nav.set_section('section_filing_information')
   make_signer_list
   e_signature
@@ -268,7 +268,7 @@ subquestion: |
 
   You can use this program if the judge has ordered the sale of your foreclosed property and set a date for the sale. If that hasn't happened yet, you may have other options. ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure) can help you learn what your options are.
 
-  **Note:** if you are a business or your foreclosed property is a commercial property, you may want to talk to a lawyer about your case before using this program. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area. If you are a corporation, you should not use this program.
+  **Note:** The forms used by this program follow laws for individual people, not businesses. If you are trying to delay the foreclosure for a business or your foreclosed property is a commercial property, you should talk to a lawyer about your case. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 ---
 template: why_delay
 subject: |
@@ -438,7 +438,7 @@ question: |
     Is anyone else on your side of the foreclosure case?
 subquestion: |
   % if len(users.elements) > 1:  
-  So far you have told us about ${comma_and_list(users.complete_elements())}.
+  So far you have told us about ${users.full_names()}.
   % else:
   If there are other defendants besides you, click **Yes**.
   % endif
@@ -451,7 +451,7 @@ question: |
   Are there any other plaintiffs in this case?
 subquestion: |
   % if len(other_parties.elements) >= 1:  
-  So far you have told us about ${comma_and_list(other_parties.complete_elements().full_names())}.
+  So far you have told us about ${other_parties.full_names()}.
   % endif
 fields:
   - no label: other_parties.there_is_another
@@ -724,18 +724,18 @@ code: |
   else:
     which_evidence = "none"
 ---
-id: evidence
-continue button field: evidence
+id: attach supporting documents
+continue button field: attach_docs
 question: |
-  Evidence
+  Attach supporting documents
 subquestion: |
   % if which_evidence != "none":
-  You should attach ${which_evidence} to your motion. Make sure to include those and any other important documents when you file your forms. 
+  You should attach ${which_evidence} to your motion. Make sure to include those and any other documents that explain why you need the foreclosure sale to be delayed when you file your forms. 
   % else:
-  You can attach evidence that you need the foreclosure sale to be delayed to your motion. Evidence can be things like paperwork or emails from your lender.
+  You can attach documents that help explain why you need the foreclosure sale to be delayed to your motion. Evidence can be things like paperwork or emails from your lender.
   % endif
   
-  Be sure to attach copies of your evidence to the forms you serve to other parties.
+  Be sure to attach copies of all documents to the forms you serve to other parties.
 
   **Note:** If you are e-filing, you can upload other documents as attachments during the e-filing process. If you are paper filing, bring copies of the documents to the clerk's office so you can attach them to the complaint.
 ---
@@ -1221,9 +1221,9 @@ attachment:
   fields:
     - "case_number": ${ case_number }
     - "county": ${trial_court.address.county.upper()}
-    - "plaintiffs": ${comma_and_list(other_parties)}
-    - "all_defendants": ${comma_and_list(users)}
-    - "signing_defendants": ${comma_and_list(signing_users)}
+    - "plaintiffs": ${other_parties.full_names()}
+    - "all_defendants": ${users.full_names()}
+    - "signing_defendants": ${signing_users.full_names()}
     - "property_street_address": ${foreclosed_property.line_one(bare=True)}
     - "property_csz_address": ${foreclosed_property.line_two()}
     - "borrowers_true": ${is_borrower}
@@ -1492,8 +1492,8 @@ attachment:
   fields:
     - "case_number": ${ case_number }
     - "county": ${trial_court.address.county.upper()}
-    - "all_plaintiffs": ${comma_and_list(other_parties)}
-    - "all_defendants": ${comma_and_list(users)}
+    - "all_plaintiffs": ${other_parties.full_names()}
+    - "all_defendants": ${users.full_names()}
     - "hearing_date": ${""}
     - "hearing_year_digits": ${""}
     - "user_street": ${users[0].address.line_one(bare=True)}
@@ -1720,8 +1720,8 @@ attachment:
   fields:
     - "case_number": ${ case_number }
     - "county": ${trial_court.address.county.upper()}
-    - "plaintiff_list": ${comma_and_list(other_parties)}
-    - "all_defendants": ${comma_and_list(users)}
+    - "plaintiff_list": ${other_parties.full_names()}
+    - "all_defendants": ${users.full_names()}
 ---
 generic object: ALIndividual
 attachment:
@@ -1944,9 +1944,9 @@ attachment:
   fields:
     - "filing_county": ${trial_court.address.county.upper()}
     - "plaintiff_names": |
-        ${comma_and_list(other_parties)}
+        ${other_parties.full_names()}
     - "defendant_names": |
-        ${comma_and_list(users)}
+        ${users.full_names()}
     - "case_number": ${case_number}
     - "codefendant_name_1": ${x.name.full(middle='full')}
     - "codefendant_street_1": ${x.address.line_one(bare=True)}
