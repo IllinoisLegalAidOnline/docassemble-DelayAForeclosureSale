@@ -90,6 +90,7 @@ code: |
 
   nav.set_section('section_delay_reasons')
   if mod_pending:
+    hamp_loan
     sale_permitted
     include_mod_contract
   if short_sale:
@@ -215,6 +216,8 @@ subquestion: |
   * A **{good reason}** for asking to delay the foreclosure sale.
 
   You can find information about dates, other parties, and addresses in the court papers you have about this case. 
+
+  If you have not filed an appearance in the foreclosure case, you may need to do so. You can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance) to make an appearance to file with the court.
 
   Set aside 10 to 20 minutes to finish this program. You can log in and save your work to return to later. 
  
@@ -763,7 +766,7 @@ fields:
 ---
 reconsider: True
 code: |
-  delivery_parties = DAList("delivery_parties", elements = other_parties)
+  delivery_parties = ALPeopleList("delivery_parties", elements = other_parties)
   for index, user in enumerate(users):
     if index > 0:
       if not user.agree:
@@ -774,7 +777,7 @@ continue button field: delivery_intro
 question: |
   Send your forms to all other parties
 subquestion: |
-  You will need to deliver a copy of your forms to these other parties: ${comma_and_list(delivery_parties)}.
+  You will need to deliver a copy of your forms to these other parties: ${delivery_parties.full_names()}.
 
   You must send a copy of your forms to each of them.
 
@@ -1041,6 +1044,19 @@ fields:
     datatype: al_international_phone
     required: False
 ---
+id: hamp
+question: |
+  Is your pending application for a HAMP loan modification?
+subquestion: |
+  HAMP stands for Home Affordable Modification Program.
+
+  HAMP was a program run from 2009 to 2016 that offered homeowners who are at risk of foreclosure reduced monthly mortgage payments. 
+  
+  If you applied for a loan modification after 2016, you can click **No** here.
+fields:
+  - no label: hamp_loan
+    datatype: yesnomaybe
+---
 id: user e-signature
 question: |
   Do you want to add your e-signature to your forms?
@@ -1257,7 +1273,9 @@ attachment:
     - "mod_pending_true": ${mod_pending}
     - "mod_pending_false": ${True if mod_pending == False else False}
     - "mod_pending_idk": ${True if mod_pending is None else False}
-    - "hamp_false": ${True if mod_pending else False}
+    - "hamp_idk": ${True if hamp_loan is None else False}
+    - "hamp_false": ${True if hamp_loan == False else False}
+    - "hamp_true": ${hamp_loan}
     - "not_permitted_true": ${True if sale_permitted and mod_pending else False}
     - "not_permitted_false": ${ True if sale_permitted == False and mod_pending else False}
     - "not_permitted_idk": ${True if sale_permitted is None and mod_pending else False}
