@@ -197,7 +197,7 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Delay a foreclosure sale** Easy Form.
 
-  If your property has been foreclosed on, you can ask the court to delay the sale of your property by filing a *Motion to Stay Foreclosure Sale*. This program helps you complete the motion, as well as other forms you may need.
+  If your property is in foreclosure and scheduled to be sold, you can ask the court to delay the sale of your property by filing a *Motion to Stay Foreclosure Sale*. This program helps you complete the motion, as well as other forms you may need.
   
   To learn more, read ILAO's article about [**stopping a judicial sale of a home**](https://www.illinoislegalaid.org/legal-information/stopping-judicial-sale-home).
 field: sees_nav_bar
@@ -217,8 +217,6 @@ subquestion: |
 
   You can find information about dates, other parties, and addresses in the court papers you have about this case. 
 
-  If you have not filed an appearance in the foreclosure case, you may need to do so. You can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance) to make an appearance to file with the court.
-
   Set aside 10 to 20 minutes to finish this program. You can log in and save your work to return to later. 
  
   ${ collapse_template(help_example) }  
@@ -226,7 +224,7 @@ subquestion: |
   Click on **{green words}** to learn what they mean. Some pages have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that helps explain things.
 terms:
   - good reason: |
-      A good reason for asking to delay the foreclosure sale could be that:
+      Here are some examples of a **good reason** for asking to delay the foreclosure sale:
       
       * You applied for a loan modification and haven't heard back yet, or
       * You need a little more time to sell your home.
@@ -245,10 +243,12 @@ subquestion: |
   After you download your *Motion to Stay Foreclosure Sale* forms, you must file them with the court. This program does not file your forms for you.
   
   You will also need to send copies of your forms to the other parties in the case.
-  
-  You can also download instructions at the end of this program. The instructions can guide you through filing your forms and going to court.
+
+   **Note:** If you have not filed an Appearance in the foreclosure case, you may need to do that before asking the court to delay the foreclosure sale. You can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance) to make an appearance to file with the court.
 
   ${collapse_template(what_fees)}
+  
+  You can also download instructions at the end of this program. The instructions can guide you through filing your forms and going to court. 
 ---
 template: what_fees
 subject: |
@@ -256,7 +256,7 @@ subject: |
 content: |
   If you have already paid to file an appearance in the foreclosure case, you do not need to pay additional court costs to file this motion. You also do not need to pay if you have alrady gotten a fee waiver.
 
-  If you still need to file an appearance with the court, you can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance).
+  If you still need to file an Appearance with the court, you can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance).
 
   If you would like to ask for a fee waiver, you can use ILAO's [**Fee waiver Easy Form**](https://www.illinoislegalaid.org/legal-information/fee-waiver).
 ---
@@ -265,7 +265,7 @@ continue button field: sale_info
 question: |
   About foreclosure sales
 subquestion: |
-  A foreclosure sale is when property is sold as ordered by a judge following a foreclosure case. Delaying a foreclosure sale is also called "staying a sale." Staying a sale does not end the foreclosure case. The judge will decide whether to delay the sale.
+  A foreclosure sale is when property is sold as ordered by a judge during a foreclosure case. Delaying a foreclosure sale is also called "staying a sale." Staying a sale does not end the foreclosure case. The judge will decide whether to delay the sale.
 
   ${collapse_template(why_delay)}
 
@@ -471,8 +471,10 @@ subquestion: |
 ---
 id: user agree
 question: |
-  Does ${users[i].name.full(middle='full')} fully agree with you and the reasons you want to delay the foreclosure sale?
+  Does ${users[i].name.full(middle='full')} want to sign the motion with you?
 subquestion: | 
+  You should only click **Yes** if ${users[i].name.full(middle='full')} fully agrees with you and the reasons you want to delay the foreclosure sale.
+
   If ${users[i].name.full(middle='full')} has any other responses or reasons they want to delay the foreclosure sale, click **No**.
 fields:
   - no label: users[i].agree
@@ -735,7 +737,7 @@ subquestion: |
   % if which_evidence != "none":
   You should attach ${which_evidence} to your motion. Make sure to include those and any other documents that explain why you need the foreclosure sale to be delayed when you file your forms. 
   % else:
-  You can attach documents that help explain why you need the foreclosure sale to be delayed to your motion. Evidence can be things like paperwork or emails from your lender.
+  You can attach documents to your motion that help explain why you need the foreclosure sale to be delayed. These can be things like paperwork or emails from your lender.
   % endif
   
   Be sure to attach copies of all documents to the forms you serve to other parties.
@@ -1051,8 +1053,6 @@ subquestion: |
   HAMP stands for Home Affordable Modification Program.
 
   HAMP was a program run from 2009 to 2016 that offered homeowners who are at risk of foreclosure reduced monthly mortgage payments. 
-  
-  If you applied for a loan modification after 2016, you can click **No** here.
 fields:
   - no label: hamp_loan
     datatype: yesnomaybe
@@ -1288,7 +1288,7 @@ attachment:
     - "additional_signatures": ${True if signing_users.number_gathered() > 3 else False}
     - "delivery_party_name_1": |
         % if delivery_parties[0].is_represented:
-        ${delivery_parties[0].lawyer.name.full(middle='full')}, (lawyer for ${delivery_parties[0].name.full(middle='full')})
+        ${delivery_parties[0].lawyer.name.full(middle='full')} (lawyer for ${delivery_parties[0].name.full(middle='full')})
         % else:
         ${delivery_parties[0].name.full(middle='full')}
         % endif
@@ -1357,7 +1357,7 @@ attachment:
     - "delivery_pm_1": ${True if format_time(delivery_parties[0].delivery_time, format='a') == "PM" and delivery_parties[0].knows_delivery_method else False}
     - "delivery_party_name_2": |
         % if delivery_parties[1].is_represented:
-        ${delivery_parties[1].lawyer.name.full(middle='full')}, (lawyer for ${delivery_parties[1].name.full(middle='full')})
+        ${delivery_parties[1].lawyer.name.full(middle='full')} (lawyer for ${delivery_parties[1].name.full(middle='full')})
         % else:
         ${delivery_parties[1].name.full(middle='full')}
         % endif
@@ -1426,7 +1426,7 @@ attachment:
     - "delivery_pm_2": ${True if format_time(delivery_parties[1].delivery_time, format='a') == "PM" and delivery_parties[1].knows_delivery_method else False}
     - "delivery_party_name_3": |
         % if delivery_parties[2].is_represented:
-        ${delivery_parties[2].lawyer.name.full(middle='full')}, (lawyer for ${delivery_parties[2].name.full(middle='full')})
+        ${delivery_parties[2].lawyer.name.full(middle='full')} (lawyer for ${delivery_parties[2].name.full(middle='full')})
         % else:
         ${delivery_parties[2].name.full(middle='full')}
         % endif
@@ -1521,7 +1521,7 @@ attachment:
     - "user_phone": ${phone_number_formatted(users[0].phone_number)}
     - "delivery_party_name_1": |
         % if delivery_parties[0].is_represented:
-        ${delivery_parties[0].lawyer.name.full(middle='full')}, (lawyer for ${delivery_parties[0].name.full(middle='full')})
+        ${delivery_parties[0].lawyer.name.full(middle='full')} (lawyer for ${delivery_parties[0].name.full(middle='full')})
         % else:
         ${delivery_parties[0].name.full(middle='full')}
         % endif
@@ -1590,7 +1590,7 @@ attachment:
     - "delivery_pm_1": ${True if format_time(delivery_parties[0].delivery_time, format='a') == "PM" and delivery_parties[0].knows_delivery_method else False}
     - "delivery_party_name_2": |
         % if delivery_parties[1].is_represented:
-        ${delivery_parties[1].lawyer.name.full(middle='full')}, (lawyer for ${delivery_parties[1].name.full(middle='full')})
+        ${delivery_parties[1].lawyer.name.full(middle='full')} (lawyer for ${delivery_parties[1].name.full(middle='full')})
         % else:
         ${delivery_parties[1].name.full(middle='full')}
         % endif
@@ -1659,7 +1659,7 @@ attachment:
     - "delivery_pm_2": ${True if format_time(delivery_parties[1].delivery_time, format='a') == "PM" and delivery_parties[1].knows_delivery_method else False}
     - "delivery_party_name_3": |
         % if delivery_parties[2].is_represented:
-        ${delivery_parties[2].lawyer.name.full(middle='full')}, (lawyer for ${delivery_parties[2].name.full(middle='full')})
+        ${delivery_parties[2].lawyer.name.full(middle='full')} (lawyer for ${delivery_parties[2].name.full(middle='full')})
         % else:
         ${delivery_parties[2].name.full(middle='full')}
         % endif
@@ -1753,7 +1753,7 @@ attachment:
     - "case_number": ${case_number}
     - "delivery_party_name_4": |
         % if x.is_represented:
-        ${x.lawyer.name.full(middle='full')}, (lawyer for ${x.name.full(middle='full')})
+        ${x.lawyer.name.full(middle='full')} (lawyer for ${x.name.full(middle='full')})
         % else:
         ${x.name.full(middle='full')}
         % endif
@@ -1851,7 +1851,7 @@ attachment:
     - "two_on_sheet": ${x.include_two}
     - "delivery_party_name_5": |
         % if x.second_person.is_represented:
-        ${x.second_person.lawyer.name.full(middle='full')}, (lawyer for ${x.second_person.name.full(middle='full')})
+        ${x.second_person.lawyer.name.full(middle='full')} (lawyer for ${x.second_person.name.full(middle='full')})
         % else:
         ${x.second_person.name.full(middle='full')}
         % endif
