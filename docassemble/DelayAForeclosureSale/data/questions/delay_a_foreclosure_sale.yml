@@ -210,7 +210,7 @@ subquestion: |
   To use this program you will need: 
 
   * The Judgment of Foreclosure entered against you,
-  * The date of the sale (this can be found on the *Notice of foreclosure sale* form), 
+  * The date of the sale (this can be found on the *Notice of foreclosure sale*), 
   * Names and addresses of the other parties,
   * Names and addresses of the other parties' lawyers, and
   * A **{good reason}** for asking to delay the foreclosure sale.
@@ -475,7 +475,7 @@ question: |
 subquestion: | 
   You should only click **Yes** if ${users[i].name.full(middle='full')} fully agrees with you and the reasons you want to delay the foreclosure sale.
 
-  If ${users[i].name.full(middle='full')} has any other responses or reasons they want to delay the foreclosure sale, click **No**.
+  If ${users[i].name.full(middle='full')} has any other responses or different reasons they want to delay the foreclosure sale, click **No**.
 fields:
   - no label: users[i].agree
     datatype: yesnoradio
