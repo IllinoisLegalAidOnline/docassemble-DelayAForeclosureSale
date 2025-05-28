@@ -254,7 +254,7 @@ template: what_fees
 subject: |
   **Will I need to pay any court fees?**
 content: |
-  If you have already paid to file an appearance in the foreclosure case, you do not need to pay additional court costs to file this motion. You also do not need to pay if you have alrady gotten a fee waiver.
+  If you have already paid to file an appearance in the foreclosure case, you do not need to pay additional court costs to file this motion. You also do not need to pay if you have already gotten a fee waiver.
 
   If you still need to file an Appearance with the court, you can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance).
 
@@ -1143,7 +1143,7 @@ objects:
   - instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
   - motion: ALDocument.using(title="Motion to Stay Foreclosure Sale", filename="motion.pdf", has_addendum=False)
   - notice: ALDocument.using(title="Notice of Motion to Stay Foreclosure Sale", filename="notice.pdf", has_addendum=False)
-  - order: ALDocument.using(title="Order to Stay Foreclosure Sale", filename="instructions.pdf", has_addendum=False)
+  - order: ALDocument.using(title="Order to Stay Foreclosure Sale", filename="order.pdf", has_addendum=False)
 ---
 reconsider: True
 code: |
