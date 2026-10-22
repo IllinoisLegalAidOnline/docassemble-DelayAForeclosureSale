@@ -1,7 +1,7 @@
 metadata:
   title: Delay a foreclosure sale
   short title: Delay a foreclosure sale
-  comment: This program makes the forms to ask the court to delay a foreclosure sale.
+  comment: This Easy Form makes the forms to ask the court to delay a foreclosure sale.
   authors:
     - Vivian McNaughton
     - Matt Newsted
@@ -27,7 +27,6 @@ objects:
   - other_parties[i].carrier: ALAddress                      
   - delivery_parties: ALPeopleList.using(there_are_any=True)
   - delivery_parties[i].lawyer: ALIndividual
-  - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 ---
 code: |
   ilao_easy_form_title = "Delay a foreclosure sale"
@@ -46,8 +45,6 @@ sections:
   - section_case_info: Case info
   - section_delay_reasons: Reasons to delay
   - section_delivery: Delivery and filing details
-  #- section_about_you: About you
-  #- section_filing_information: Filing information
   - section_download: Download  
 ---
 # interview order block
@@ -79,8 +76,7 @@ code: |
   set_progress(20)
   users.gather()
   other_parties.gather()
-  trial_court_index
-  trial_court.address.county
+  filing_county
   case_number
   been_in_court
   set_progress(40)
@@ -199,7 +195,7 @@ subquestion: |
 
   If your property is in foreclosure and scheduled to be sold, you can ask the court to delay the sale of your property by filing a *Motion to Stay Foreclosure Sale*. This program helps you complete the motion, as well as other forms you may need.
   
-  To learn more, read ILAO's article about [**stopping a judicial sale of a home**](https://www.illinoislegalaid.org/legal-information/stopping-judicial-sale-home).
+  To learn more, see ILAO's article on [**stopping a judicial sale of a home**](https://www.illinoislegalaid.org/node/31281).
 field: sees_nav_bar
 ---
 id: instructions
@@ -244,7 +240,7 @@ subquestion: |
   
   You will also need to send copies of your forms to the other parties in the case.
 
-   **Note:** If you have not filed an Appearance in the foreclosure case, you may need to do that before asking the court to delay the foreclosure sale. You can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance) to make an appearance to file with the court.
+   **Note:** If you have not filed an Appearance in the foreclosure case, you may need to do that before asking the court to delay the foreclosure sale. You can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/node/90166) to make an appearance to file with the court.
 
   ${collapse_template(what_fees)}
   
@@ -256,9 +252,9 @@ subject: |
 content: |
   If you have already paid to file an appearance in the foreclosure case, you do not need to pay additional court costs to file this motion. You also do not need to pay if you have already gotten a fee waiver.
 
-  If you still need to file an Appearance with the court, you can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/legal-information/appearance).
+  If you still need to file an Appearance with the court, you can use ILAO's [**Appearance Easy Form**](https://www.illinoislegalaid.org/node/90166).
 
-  If you would like to ask for a fee waiver, you can use ILAO's [**Fee waiver Easy Form**](https://www.illinoislegalaid.org/legal-information/fee-waiver).
+  If you would like to ask for a fee waiver, you can use ILAO's [**Fee waiver Easy Form**](https://www.illinoislegalaid.org/node/30831).
 ---
 id: foreclosure sale info
 continue button field: sale_info
@@ -269,7 +265,7 @@ subquestion: |
 
   ${collapse_template(why_delay)}
 
-  You can use this program if the judge has ordered the sale of your foreclosed property and set a date for the sale. If that hasn't happened yet, you may have other options. ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure) can help you learn what your options are.
+  You can use this program if the judge has ordered the sale of your foreclosed property and set a date for the sale. If that hasn't happened yet, you may have other options. ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/node/31256) can help you learn what your options are.
 
   **Note:** The forms used by this program follow laws for individual people, not businesses. If you are trying to delay the foreclosure for a business or your foreclosed property is a commercial property, you should talk to a lawyer about your case. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 ---
@@ -279,7 +275,7 @@ subject: |
 content: |
   The foreclosure sale is not the final step in a foreclosure case. However, most options to stop foreclosure are not available after the sale unless the sale is set aside (undone). 
   
-  You can ask to delay the sale so you can pursue another option. Such options include loan modification, selling the home, or declaring bankruptcy. To learn more, read ILAO's article about [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/legal-information/options-dealing-foreclosure).
+  You can ask to delay the sale so you can pursue another option. Such options include loan modification, selling the home, or declaring bankruptcy. To learn more, see ILAO's article on [**options for dealing with foreclosure**](https://www.illinoislegalaid.org/node/31256).
 ---
 id: judgment entered check
 question: |
@@ -299,9 +295,9 @@ question: |
 subquestion: |
   You cannot use this program unless you received a Judgment of Foreclosure.
 
-  If your lender is trying to foreclose on you but the court has not yet made a judgment, you may be able to reply. You can file a *Mortgage Foreclosure Appearance and Answer* to respond to a mortgage foreclosure complaint. Use  [**ILAO's Easy Form**](https://www.illinoislegalaid.org/legal-information/respond-mortgage-foreclosure-complaint) to make the forms you need.
+  If your lender is trying to foreclose on you but the court has not yet made a judgment, you may be able to reply. You can file a *Mortgage Foreclosure Appearance and Answer* to respond to a mortgage foreclosure complaint. Use ILAO's [**Respond to a mortgage foreclosure complaint Easy Form**](https://www.illinoislegalaid.org/node/30986) to make the forms you need.
   
-  To learn more about what you can do about a foreclosure, read ILAO's article on [**responding to a mortgage foreclosure case**](https://www.illinoislegalaid.org/legal-information/responding-mortgage-foreclosure-case).
+  To learn more about what you can do about a foreclosure, see ILAO's article on [**responding to a mortgage foreclosure case**](https://www.illinoislegalaid.org/node/31296).
 buttons:
   - Exit: exit
   - Restart: restart
@@ -385,7 +381,7 @@ question: |
 subquestion: |
   You cannot use this program unless you have a *Notice of Foreclosure Sale* or know when the sale is going to happen. You may want to contact the court to ask if you should have gotten a notice from them.
   
-  To learn more about what you can do about a foreclosure, read ILAO's article on [**Responding to a mortgage foreclosure case**](https://www.illinoislegalaid.org/legal-information/responding-mortgage-foreclosure-case).
+  To learn more about what you can do about a foreclosure, see ILAO's article on [**responding to a mortgage foreclosure case**](https://www.illinoislegalaid.org/node/31296).
 buttons:
   - Exit: exit
   - Restart: restart
@@ -585,32 +581,14 @@ content: |
   * [**Yahoo**](https://login.yahoo.com/account/create?.lang=en-US&.intl=us)
 ---
 id: county
-continue button field: county
 question: |
   In which county was this case filed?
 subquestion: |
   ${ collapse_template(county_lookup_help) }  
 fields:
-  - no label: trial_court_index
+  - County: filing_county
     code: |
-      court_county_lookup()
----
-code: |
-  def court_county_lookup():
-    all_court_counties = court_list._load_courts()['address_county'].items()
-    filtered_courts = [(-1, "Cook")]
-    for court in all_court_counties:
-      if court[1] != "Cook":
-        filtered_courts.append(court)
-    return sorted( filtered_courts, key=lambda y: y[1])
----
-depends on:
-  - trial_court_index
-code: |
-  if trial_court_index == "-1":
-    trial_court = court_list.as_court('trial_court', 15)
-  else:
-    trial_court = court_list.as_court('trial_court', trial_court_index)
+      il_county_list
 ---
 template: county_lookup_help
 subject: |
@@ -661,7 +639,7 @@ content: |
 
   If e-filing, you can upload the documents separately. If filing with paper forms, you can staple the documents to your forms. Ask the circuit clerk for instructions.
 
-  To learn more, read ILAO's article about [**e-filing**](https://www.illinoislegalaid.org/legal-information/e-filing-basics).
+  To learn more, see ILAO's article on [**e-filing**](https://www.illinoislegalaid.org/node/109496).
 ---
 id: modification pending
 question: |
@@ -987,9 +965,13 @@ fields:
 ---
 template: efiling_help
 subject: |
-  **What if I need help?**
+  **What if I need help sending my forms electronically?**
 content: |  
-  If you need help delivering by email or using the e-filing service provider, you can visit a [**Legal Self-Help Center**](https://www.illinoislegalaid.org/get-legal-help/lshc-directory) or you can call or text [**Illinois Court Help**](https://www.ilcourthelp.gov) at 833-411-1121.
+  If you need help delivering by email or using the e-filing system, you can visit a [**Legal Self-Help Center :external-link:**](https://www.illinoislegalaid.org/get-legal-help/lshc-directory). You can also contact Illinois Court Help:
+
+  * **[Visit the Illinois Court Help website :external-link:](https://www.ilcourthelp.gov/)**,
+  * <a href="tel:833-411-1121">**Call (833) 411-1121 :phone:**</a>, or
+  * <a href="sms:833-411-1121">**Text (833) 411-1121 :comment:**</a>.
 ---
 id: delivery time
 generic object: ALIndividual
@@ -1236,7 +1218,7 @@ attachment:
   pdf template file: motion_to_stay_foreclosure_sale.pdf
   fields:
     - "case_number": ${ case_number }
-    - "county": ${trial_court.address.county.upper()}
+    - "county": ${filing_county.upper()}
     - "plaintiffs": ${other_parties.full_names()}
     - "all_defendants": ${users.full_names()}
     - "signing_defendants": ${signing_users.full_names()}
@@ -1509,7 +1491,7 @@ attachment:
   pdf template file: notice_of_motion_to_stay_foreclosure_sale.pdf
   fields:
     - "case_number": ${ case_number }
-    - "county": ${trial_court.address.county.upper()}
+    - "county": ${filing_county.upper()}
     - "all_plaintiffs": ${other_parties.full_names()}
     - "all_defendants": ${users.full_names()}
     - "hearing_date": ${""}
@@ -1737,7 +1719,7 @@ attachment:
   pdf template file: order_to_stay_foreclosure_sale.pdf
   fields:
     - "case_number": ${ case_number }
-    - "county": ${trial_court.address.county.upper()}
+    - "county": ${filing_county.upper()}
     - "plaintiff_list": ${other_parties.full_names()}
     - "all_defendants": ${users.full_names()}
 ---
@@ -1960,7 +1942,7 @@ attachment:
   editable: False
   pdf template file: delay_foreclosure_sale_defendant_signatures.pdf
   fields:
-    - "filing_county": ${trial_court.address.county.upper()}
+    - "filing_county": ${filing_county.upper()}
     - "plaintiff_names": |
         ${other_parties.full_names()}
     - "defendant_names": |
@@ -2047,13 +2029,10 @@ review:
       % for my_var in other_parties:
         * ${ my_var.name_full() }
       % endfor
-  - Edit: 
-      - trial_court_index
-      - recompute:
-        - trial_court
+  - Edit: filing_county
     button: |
       **County where this case is filed:**
-      ${ trial_court.address.county }
+      ${ filing_county }
   - Edit: case_number
     button: |
       **Case number:**
@@ -2436,13 +2415,10 @@ review:
       % for my_var in other_parties:
         * ${ my_var.name_full() }
       % endfor
-  - Edit: 
-      - trial_court_index
-      - recompute:
-        - trial_court
+  - Edit: filing_county
     button: |
       **County where this case is filed:**
-      ${ trial_court.address.county }
+      ${ filing_county }
   - Edit: case_number
     button: |
       **Case number:**
